@@ -1,11 +1,10 @@
 import networkx as nx
 from parse import read_input_file, write_output_file
 from utils import is_valid_solution, calculate_happiness, calculate_stress_for_room
-import time
+import time, copy
 
 def bruteForce(G, s):
     bruteForce(G, s, 0)
-
 
 def bruteForce(G, s, timeoutInSeconds):
     """
@@ -41,7 +40,7 @@ def bruteForce(G, s, timeoutInSeconds):
         if numAssigned >= numStudents:
             curScore = calculate_happiness(curAssignment, G)
             if curScore > bestScore:
-                bestAssignment = curAssignment.copy()
+                bestAssignment = copy.deepcopy(curAssignment)
                 bestNumRooms = numRooms
                 bestScore = curScore
             return
