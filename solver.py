@@ -17,7 +17,7 @@ def solve(G, s):
     """
 
     #TODO: your code here!
-    return bruteForce(G, s)
+    return estimate(G, s, 0)
     
 # Here's an example of how to run your solver.
 
