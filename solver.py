@@ -17,7 +17,7 @@ def solve(G, s):
     """
 
     #TODO: your code here!
-    return estimate(G, s, 0)
+    return estimate(G, s)
     
 # Here's an example of how to run your solver.
 
