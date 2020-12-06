@@ -9,7 +9,7 @@ def bruteForce(G, s):
     bruteForce(G, s, 0)
 
 
-def bruteForce(G, s, timeoutInSeconds=1):
+def bruteForce(G, s, timeoutInSeconds=120):
     """
     Brute force with backtracking on solution validity
     Args:
@@ -68,13 +68,13 @@ def bruteForce(G, s, timeoutInSeconds=1):
 
 
 if __name__ == "__main__":
-    timeout_fname = "5min_timeout_outputs"
-    timeout_fnames = os.listdir("1sec_timeout_outputs")
-    output_fnames = os.listdir(timeout_fname)
+    timeout_fname = "2min_timeout_outputs"
+    # source_fnames = os.listdir("1sec_timeout_outputs")
+    timeout_fnames = os.listdir(timeout_fname)
     solved_fnames = os.listdir("solved")
-    for fname in sorted(os.listdir("inputs/")):
-        if "medium" in fname and f'{fname[:-3]}.out' not in timeout_fnames and \
-                f'{fname[:-3]}.out' not in output_fnames and f'{fname[:-3]}.out' not in solved_fnames:
+    for fname in sorted(os.listdir("inputs/"), reverse=True):
+        if "medium" in fname and f'{fname[:-3]}.out' not in timeout_fnames \
+                and f'{fname[:-3]}.out' not in solved_fnames:
             print("starting fname: ", fname)
             path = os.path.join("inputs", fname)
             G, s = read_input_file(path)
@@ -85,7 +85,7 @@ if __name__ == "__main__":
             print(f"Solution: {D}, {k}")
 
             # Save work done already
-            if path[-3:] == ".in":
+            if path[-3:] == ".in" and D_last is not None:
                 write_output_file(D_last, f'{timeout_fname}/cache/{path[7:-3]}last.out')
 
             if D is None:
