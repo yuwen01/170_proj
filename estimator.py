@@ -3,8 +3,10 @@ from parse import read_input_file, write_output_file
 from utils import is_valid_solution, calculate_happiness, calculate_stress_for_room, calculate_happiness_for_room, \
     convert_dictionary
 import sys
+import os
+import time
 
-''' simulated annealing bay bee 
+''' simulated annealing bay bee
 G: the graph of the students and their breakout rooms
 samples_per: how many members are in each generation
 kept_per: how many solutions to keep in each generation
@@ -23,8 +25,8 @@ def estimate(G, s, neighborhood=2, samples_per=15, kept_per=4, loops=100, seed=6
 
 
 ''' the point of this is to get a starting point. Ideally, search radius will decrease over time,
-so we don't have such consistent starts. I'm only doing this because I don't know how to randomly 
-generate a starting solution that meets stress requirements 
+so we don't have such consistent starts. I'm only doing this because I don't know how to randomly
+generate a starting solution that meets stress requirements
 
 this algorithm sucks ass
 '''
@@ -52,8 +54,6 @@ def greedy_solution(G, budget, neighborhood=-1, base=None):
         student, newRoom = move
         assignment[student] = newRoom
         move = getBetterAssignment(G, budget, assignment, numStudents)
-
-    print(assignment)
     return assignment, len(set(assignment.values()))
 
 
@@ -77,7 +77,6 @@ def getBetterAssignment(G, s, D, maxRooms):
 
     if student is None:
         return None
-    print(maxHappiness)
     return student, move
 
 
@@ -100,3 +99,21 @@ def balance(G, budget, assignment):
             new_rooms[len(assignment) - 1 + len(new_rooms)] = [first]
 
     assignment.update(new_rooms)
+
+if __name__ == "__main__":
+    for fname in os.listdir("inputs/"):
+        if "large" in fname:
+            path = os.path.join("inputs", fname)
+            G, s = read_input_file(path)
+
+            start = time.time()
+            D, k = estimate(G, s)
+            end = time.time()
+
+            assert is_valid_solution(D, G, s, k)
+            print("Total Happiness: {}".format(calculate_happiness(D, G)))
+            print("Solving took {} seconds.".format(end - start))
+            if path[-3:] == ".in":
+                write_output_file(D, f'estoutputs/{path[7:-3]}.out')
+            else:
+                write_output_file(D, f'test/test.out')

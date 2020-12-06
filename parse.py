@@ -110,7 +110,6 @@ def read_output_file(path, G, s):
 
     return D
 
-
 def write_output_file(D, path):
     """
     Writes a mapping to an output file
@@ -123,3 +122,17 @@ def write_output_file(D, path):
         for key, value in D.items():
             fo.write(str(key) + " " + str(value) + "\n")
         fo.close()
+
+def read_output_dict(path):
+    '''
+    Returns the student to room dictionary that
+    corresponds to an output file.
+    '''
+    assert path[-4:] == ".out"
+    result = {}
+    with open(path, "r") as fo:
+        lines = fo.read().splitlines()
+        for line in lines:
+            digs = [int(x) for x in line.split()]
+            result[digs[0]] = digs[1]
+    return result
