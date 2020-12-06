@@ -7,7 +7,7 @@ import os
 def bruteForce(G, s):
     bruteForce(G, s, 0)
 
-def bruteForce(G, s, timeoutInSeconds=300):
+def bruteForce(G, s, timeoutInSeconds=5):
     """
     Brute force with backtracking on solution validity
     Args:
@@ -26,16 +26,18 @@ def bruteForce(G, s, timeoutInSeconds=300):
     bestScore = -1
     start = time.time()
     curAssignment = {}
+    timeout = 0
 
     def dfs(curAssignment, numAssigned, numRooms):
-        nonlocal bestAssignment, bestNumRooms, bestScore
+        nonlocal bestAssignment, bestNumRooms, bestScore, timeout
         # End early if timed out and return best solution
         if timeoutInSeconds and time.time() > start + timeoutInSeconds:
-            return -1
+            timeout = -1
+            return
 
         # Ignore assignments with more than "numStudents" rooms.
         if numRooms >= numStudents:
-            return 0
+            return
 
         # If all students are assigned check if assignment is better
         if numAssigned >= numStudents:
@@ -44,7 +46,7 @@ def bruteForce(G, s, timeoutInSeconds=300):
                 bestAssignment = copy.deepcopy(curAssignment)
                 bestNumRooms = numRooms
                 bestScore = curScore
-            return 0
+            return
 
         # Go through all possible room assignments for the next student
         for room in range(numRooms + 1):
@@ -70,13 +72,13 @@ def bruteForce(G, s, timeoutInSeconds=300):
                 dfs(curAssignment, numAssigned + 1, newNumRooms)
 
         del curAssignment[numAssigned]
-    timeout = dfs(curAssignment, 0, 0)
+    dfs(curAssignment, 0, 0)
     return bestAssignment, bestNumRooms, timeout
 
 if __name__ == "__main__":
     timeout_fnames = os.listdir("timeout_outputs")
     output_fnames = os.listdir("outputs")
-    for fname in os.listdir("inputs/"):
+    for fname in sorted(os.listdir("inputs/")):
         if "medium" in fname and f'{fname[:-3]}.out' not in timeout_fnames and \
             f'{fname[:-3]}.out' not in output_fnames:
             print("starting fname: ", fname)
@@ -93,10 +95,11 @@ if __name__ == "__main__":
             if t == -1:
                 if path[-3:] == ".in":
                     write_output_file(D, f'timeout_outputs/{path[7:-3]}.out')
+                    print(fname, " timed out.")
                 else:
                     write_output_file(D, f'test/test.out')
             else:
                 if path[-3:] == ".in":
-                    write_output_file(D, f'outputs/{path[7:-3]}.out')
+                    write_output_file(D, f'test_outputs/{path[7:-3]}.out')
                 else:
                     write_output_file(D, f'test/test.out')
