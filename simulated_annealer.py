@@ -179,6 +179,7 @@ def find_largest_k(G, s, n):
     return largest_k
 
 if __name__ == '__main__':
+    # Uncomment line below to run on all input files and comment out the debug section
     # main()
 
     # Debug for a single input file
@@ -191,3 +192,4 @@ if __name__ == '__main__':
         n = int(n)
         fo.close()
     find_largest_k(G, s, n)
+    # END Debug for a single input file
