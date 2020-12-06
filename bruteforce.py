@@ -76,11 +76,12 @@ def bruteForce(G, s, timeoutInSeconds=1):
     return bestAssignment, bestNumRooms, timeout
 
 if __name__ == "__main__":
-    timeout_fnames = os.listdir("timeout_outputs")
+    timeout_fnames = os.listdir("1sec_timeout_outputs")
     output_fnames = os.listdir("outputs")
+    solved_fnames = os.listdir("solved")
     for fname in sorted(os.listdir("inputs/")):
         if "medium" in fname and f'{fname[:-3]}.out' not in timeout_fnames and \
-            f'{fname[:-3]}.out' not in output_fnames:
+            f'{fname[:-3]}.out' not in output_fnames f'{fname[:-3]}.out' not in solved_fnames:
             print("starting fname: ", fname)
             path = os.path.join("inputs", fname)
             G, s = read_input_file(path)
@@ -91,7 +92,7 @@ if __name__ == "__main__":
             print(f"Solution: {D}, {k}")
             if D is None:
                 if path[-3:] == ".in":
-                    write_output_file({"NO SOLUTION" : 1}, f'timeout_outputs/{path[7:-3]}.out')
+                    write_output_file({"NO SOLUTION" : 1}, f'1sec_timeout_outputs/{path[7:-3]}.out')
                     print(fname, " timed out. No solution found.")
                 else:
                     write_output_file(D, f'test/test.out')
@@ -102,12 +103,12 @@ if __name__ == "__main__":
             print("Solving took {} seconds.".format(end - start))
             if t == -1:
                 if path[-3:] == ".in":
-                    write_output_file(D, f'timeout_outputs/{path[7:-3]}-no-sol.out')
+                    write_output_file(D, f'1sec_timeout_outputs/{path[7:-3]}-no-sol.out')
                     print(fname, " timed out.")
                 else:
                     write_output_file(D, f'test/test.out')
             else:
                 if path[-3:] == ".in":
-                    write_output_file(D, f'test_outputs/{path[7:-3]}.out')
+                    write_output_file(D, f'solved/{path[7:-3]}.out')
                 else:
                     write_output_file(D, f'test/test.out')
