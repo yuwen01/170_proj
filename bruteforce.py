@@ -25,16 +25,19 @@ def bruteForce(G, s, timeoutInSeconds=1):
 
     bestAssignment = None
     bestNumRooms = -1
+    lastAssignment = None
     bestScore = -1
     start = time.time()
     curAssignment = {}
     timeout = 0
 
     def dfs(curAssignment, numAssigned, numRooms):
-        nonlocal bestAssignment, bestNumRooms, bestScore, timeout
+        nonlocal bestAssignment, bestNumRooms, bestScore, timeout, lastAssignment
         # End early if timed out and return best solution
         if timeoutInSeconds and time.time() > start + timeoutInSeconds:
             timeout = -1
+            if lastAssignment is None:
+                lastAssignment = copy.deepcopy(curAssignment)
             return
 
         # Ignore assignments with more than "numStudents" rooms.
@@ -55,48 +58,39 @@ def bruteForce(G, s, timeoutInSeconds=1):
             curAssignment[numAssigned] = room
             newNumRooms = max(numRooms, room + 1)
 
-            # # Check if assignment is valid so far
-            # roomAssignments = {}
-            # for i in range(numAssigned + 1):
-            #     curRoom = curAssignment[i]
-            #     if curRoom not in roomAssignments:
-            #         roomAssignments[curRoom] = [i]
-            #     else:
-            #         roomAssignments[curRoom].append(i)
-            #
-            # maxRoomStress = s / newNumRooms
-            # isValid = True
-            # print(roomAssignments)
-            # for breakoutRoom in roomAssignments:
-            #     isValid &= maxRoomStress < calculate_stress_for_room(breakoutRoom, G)
-
             if is_valid_solution(curAssignment, G, s, newNumRooms):
                 dfs(curAssignment, numAssigned + 1, newNumRooms)
 
         del curAssignment[numAssigned]
 
     dfs(curAssignment, 0, 0)
-    return bestAssignment, bestNumRooms, timeout
+    return bestAssignment, bestNumRooms, timeout, lastAssignment
 
 
 if __name__ == "__main__":
+    timeout_fname = "5min_timeout_outputs"
     timeout_fnames = os.listdir("1sec_timeout_outputs")
-    output_fnames = os.listdir("solved")
+    output_fnames = os.listdir(timeout_fname)
     solved_fnames = os.listdir("solved")
     for fname in sorted(os.listdir("inputs/")):
-        if "small" in fname and f'{fname[:-3]}.out' not in timeout_fnames and \
+        if "medium" in fname and f'{fname[:-3]}.out' not in timeout_fnames and \
                 f'{fname[:-3]}.out' not in output_fnames and f'{fname[:-3]}.out' not in solved_fnames:
             print("starting fname: ", fname)
             path = os.path.join("inputs", fname)
             G, s = read_input_file(path)
 
             start = time.time()
-            D, k, t = bruteForce(G, s)
+            D, k, t, D_last = bruteForce(G, s)
             end = time.time()
             print(f"Solution: {D}, {k}")
+
+            # Save work done already
+            if path[-3:] == ".in":
+                write_output_file(D_last, f'{timeout_fname}/cache/{path[7:-3]}last.out')
+
             if D is None:
                 if path[-3:] == ".in":
-                    write_output_file({"NO SOLUTION": 1}, f'1sec_timeout_outputs/{path[7:-3]}-no-sol.out')
+                    write_output_file({"NO SOLUTION": 1}, f'{timeout_fname}/{path[7:-3]}-no-sol.out')
                     print(fname, " timed out. No solution found.")
                 else:
                     write_output_file(D, f'test/test.out')
@@ -107,7 +101,7 @@ if __name__ == "__main__":
             print("Solving took {} seconds.".format(end - start))
             if t == -1:
                 if path[-3:] == ".in":
-                    write_output_file(D, f'1sec_timeout_outputs/{path[7:-3]}.out')
+                    write_output_file(D, f'{timeout_fname}/{path[7:-3]}.out')
                     print(fname, " timed out.")
                 else:
                     write_output_file(D, f'test/test.out')
