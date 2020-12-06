@@ -72,6 +72,8 @@ if __name__ == "__main__":
     # source_fnames = os.listdir("1sec_timeout_outputs")
     timeout_fnames = os.listdir(timeout_fname)
     solved_fnames = os.listdir("solved")
+    print(timeout_fnames)
+    print(solved_fnames)
     for fname in sorted(os.listdir("inputs/"), reverse=True):
         if "medium" in fname and f'{fname[:-3]}.out' not in timeout_fnames \
                 and f'{fname[:-3]}.out' not in solved_fnames:
