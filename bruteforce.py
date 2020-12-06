@@ -4,8 +4,10 @@ from utils import is_valid_solution, calculate_happiness, calculate_stress_for_r
 import time, copy
 import os
 
+
 def bruteForce(G, s):
     bruteForce(G, s, 0)
+
 
 def bruteForce(G, s, timeoutInSeconds=1):
     """
@@ -72,16 +74,18 @@ def bruteForce(G, s, timeoutInSeconds=1):
                 dfs(curAssignment, numAssigned + 1, newNumRooms)
 
         del curAssignment[numAssigned]
+
     dfs(curAssignment, 0, 0)
     return bestAssignment, bestNumRooms, timeout
 
+
 if __name__ == "__main__":
     timeout_fnames = os.listdir("1sec_timeout_outputs")
-    output_fnames = os.listdir("outputs")
+    output_fnames = os.listdir("solved")
     solved_fnames = os.listdir("solved")
     for fname in sorted(os.listdir("inputs/")):
-        if "medium" in fname and f'{fname[:-3]}.out' not in timeout_fnames and \
-            f'{fname[:-3]}.out' not in output_fnames f'{fname[:-3]}.out' not in solved_fnames:
+        if "small" in fname and f'{fname[:-3]}.out' not in timeout_fnames and \
+                f'{fname[:-3]}.out' not in output_fnames and f'{fname[:-3]}.out' not in solved_fnames:
             print("starting fname: ", fname)
             path = os.path.join("inputs", fname)
             G, s = read_input_file(path)
@@ -92,7 +96,7 @@ if __name__ == "__main__":
             print(f"Solution: {D}, {k}")
             if D is None:
                 if path[-3:] == ".in":
-                    write_output_file({"NO SOLUTION" : 1}, f'1sec_timeout_outputs/{path[7:-3]}.out')
+                    write_output_file({"NO SOLUTION": 1}, f'1sec_timeout_outputs/{path[7:-3]}.out')
                     print(fname, " timed out. No solution found.")
                 else:
                     write_output_file(D, f'test/test.out')
