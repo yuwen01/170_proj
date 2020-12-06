@@ -7,14 +7,14 @@ next assignment to look at (always increasing happiness), we use a probabilty
 function to determine when to keep the current assignment or use a random assignment.
 The probabilty function is:
     P = 1 if happiness(random_assignment) > happiness(current_assignment)   # can mess w this maybe
-    P = math.exp( -(happiness(random) - happiness(curr)) / i )
+    P = math.exp( -(happiness(random) - happiness(curr)) / i ) otherwise
 
 The second part ensures that probability of accepting a random move decreases when
 the difference between the random happiness and current happiness increases.
 
 So we want to always accept good moves (high delta), but sometimes allow bad moves
 (low delta) with a low probability. Look at graph of y=1/(1+e^-x) for rough estimate
-of what P is.
+of what P would be for different delta.
 
 As we start to run out of our alloted cycle budget, i, the probability of choosing
 a bad move decreases (since we want to end on maximum, even if it's not the global).
@@ -26,7 +26,6 @@ invalid solution (see find_largest_k function).
 
 Usage: python3 simulated_annealer.py
 '''
-
 import networkx as nx
 from parse import read_input_file, write_output_file
 from utils import is_valid_solution, calculate_happiness, \
@@ -71,7 +70,7 @@ def main():
             path = os.path.join("inputs/", filename)
             G, s = read_input_file(path)
 
-            # Find number of students, probably a better way
+            # Find number of students, probably a better way exists
             with open(path, "r") as fo:
                 n = fo.readline().strip()
                 assert n.isdigit()
@@ -93,7 +92,9 @@ def main():
                 # Write output file to sa_outputs/
                 if path[-3:] == ".in":
                     write_output_file(D, f'sa_outputs/{path[7:-3]}.out')
-                # TODO: Write to different folder if timedout
+                # TODO: Write to sa_outputs/timedout folder if input times out
+                #       Is this even necessary for SA? Cycle budget, i, should
+                #       take care of this.
             
 
 def solve(G, s, n):
@@ -105,7 +106,8 @@ def solve(G, s, n):
 
     # Set current state/assignment to the initial assignment
     curr_assignment = all_assignments[0]
-    i = 1000 # counter of how many times to loop, essentially alloted time budget
+    i = 1000 # counter of how many times to loop, essentially alloted cycle budget
+             # TODO: Find an ideal value for i
 
     while i > 0:
         # Find the total happiness of the current assignment
@@ -151,7 +153,7 @@ def generate_all_possible_assignments(G, n, k):
           2 1                        2 0
     '''
     # Maybe try using Cartesian product of two np.arrays (student indexes and room indexes)
-    #   and then figure out which assignments are the same, but with only room numbers
+    #   and then figure out which assignments are the same but with only room numbers
     #   differing and remove them.
     pass
 
