@@ -27,18 +27,17 @@ invalid solution (see find_largest_k function).
 Usage: python3 simulated_annealer.py
 '''
 import networkx as nx
-from parse import read_input_file, write_output_file, read_output_dict
-from utils import is_valid_solution, calculate_happiness, \
-    calculate_stress_for_room, calculate_happiness_for_room, convert_dictionary
+from parse import *
+from utils import *
 import os
 import re
 import time
 import random
 import math
 
-CYCLE_BUDGET = 10000
-SAMPLE_SIZE = 10
-MODES = 6
+CYCLE_BUDGET = 1000
+SAMPLE_SIZE = 1
+
 def main():
     '''
     Anneal, based on parameters in main. Write to different folders depending on specific parameters
@@ -50,46 +49,41 @@ def main():
     alphanumeric = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
 
     # Iterate over files of chosen length in order
-    for mode in range(MODES):
-        for filename in sorted(os.listdir("inputs/"), key=alphanumeric)[0:SAMPLE_SIZE]:
-            if 'large' in filename:
-                print("annealing", filename)
-                path = os.path.join("inputs/", filename)
-                G, s = read_input_file(path)
+    for filename in sorted(os.listdir("inputs/"), key=alphanumeric)[0:SAMPLE_SIZE]:
+        if 'large' in filename:
+            print("annealing", filename)
+            path = os.path.join("inputs/", filename)
+            G, s = read_input_file(path)
 
-                #starter = read_output_dict(os.path.join("flattened_greedy_outputs", filename[:-3] + ".out"))
-                # Find number of students, probably a better way exists
-                with open(path, "r") as fo:
-                    n = fo.readline().strip()
-                    assert n.isdigit()
-                    n = int(n)
-                    fo.close()
+            #starter = read_output_dict(os.path.join("flattened_greedy_outputs", filename[:-3] + ".out"))
+            # Find number of students, probably a better way exists
+            with open(path, "r") as fo:
+                n = fo.readline().strip()
+                assert n.isdigit()
+                n = int(n)
+                fo.close()
 
-                starter = {}
-                if mode % 3 == 0:
-                    starter = read_output_dict(os.path.join("flattened_greedy_outputs", filename[:-3] + ".out"))
-                else:
-                    for i in range(n):
-                        starter[i] = i
-                start = time.time()
-                D, k = solve(G, s, n, starter)
-                end = time.time()
+            starter = {}
+            starter = read_output_dict(os.path.join("flattened_greedy_outputs", filename[:-3] + ".out"))
+            # for i in range(n):
+            #     starter[i] = i
+            start = time.time()
+            D, k = solve(G, s, n, starter=starter)
+            end = time.time()
 
-                try:
-                    assert is_valid_solution(D, G, s, k)
-                except:
-                    print('=====CALCULATED SOLUTION IS INVALID=====')
-                finally:
-                    print("Total Happiness: {}".format(calculate_happiness(D, G)))
-                    print("Solving took {} seconds".format(end - start))
+            try:
+                assert is_valid_solution(D, G, s, k)
+            except:
+                print('=====CALCULATED SOLUTION IS INVALID=====')
+            finally:
+                print("Total Happiness: {}".format(calculate_happiness(D, G)))
+                print("Solving took {} seconds".format(end - start))
 
-                    # Write output file to sa_outputs/
-                    if path[-3:] == ".in":
-                        write_output_file(D, f'test_{mode}_outputs/{path[7:-3]}.out')
-        mode += 1
+                # Write output file to sa_outputs/
+                if path[-3:] == ".in":
+                    write_output_file(D, f'test_0_outputs/{path[7:-3]}.out')
 
-
-def solve(G, s, n, starter=None, timeoutInSeconds=180):
+def solve(G, s, n, starter=None, timeoutInSeconds=300):
     largest_k = find_largest_k(G, s, n) # potentially use this?
     # assignment = {} # maps students to rooms
 
@@ -100,13 +94,11 @@ def solve(G, s, n, starter=None, timeoutInSeconds=180):
     i = 0 # counter of how many times to loop, essentially alloted cycle budget
              # TODO: Find an ideal value for i
     starttime = time.time()
-    while i < CYCLE_BUDGET and time.time() < timeoutInSeconds:
+    while i < CYCLE_BUDGET and time.time() < timeoutInSeconds + starttime:
         # Find the total happiness of the current assignment
         curr_happiness = calculate_happiness(curr_assignment, G)
 
-        curr_neighborhood_size = neighborhood_size(i) #gonna try this for now, then use the function
-
-        new_assignment = random_neighbor(G, s, starter, neighborhood_size(i), merge_prob(i))
+        new_assignment = random_neighbor(G, s, starter, neighborhood_size(i))
 
         #all_assignments[random.randint(0, len(all_assignments))]
         # Find the total happiness of the new assignment
@@ -115,32 +107,29 @@ def solve(G, s, n, starter=None, timeoutInSeconds=180):
         delta_happiness = new_happiness - curr_happiness
 
         # If the new assignment is better, then replace the current assignment
-        if delta_happiness > 0:
-            curr_assignment = new_assignment
-        else:
-            # If new assignment is worse, still replace it if we haven't looped
-            #   very many times (e.g. i is high)
-            # This is because we want to encourage randomizing if we just started
-            #   looking at assignments, but discourage it later (but still possible)
-            if use_worse(delta_happiness, CYCLE_BUDGET -  i) > random.uniform(0,1):
-                curr_assignment = new_assignment
+        curr_assignment = new_assignment
+        # if delta_happiness >= 0:
+        #     curr_assignment = new_assignment
+        # else:
+        #     # If new assignment is worse, still replace it if we haven't looped
+        #     #   very many times (e.g. i is high)
+        #     # This is because we want to encourage randomizing if we just started
+        #     #   looking at assignments, but discourage it later (but still possible)
+        #     if use_worse(delta_happiness, CYCLE_BUDGET -  i) > random.uniform(0,1):
+        #         curr_assignment = new_assignment
 
         i += 1
 
-    return curr_assignment, len(set(curr_assignment.values()))
+    return curr_assignment, num_rooms(curr_assignment)
 
 # Pick a random neighbor of starter
 def neighborhood_size(t):
-    if mode % 2:
-        return int(20 * math.exp(-0.004 * t) + 1)
-    else:
-        return 4
+    #return int(20 * math.exp(-0.004 * t) + 1)
+    return 6
 
 def merge_prob(t):
-    if mode % 2:
-        return 0.8 * math.exp(-0.003 * t)
-    else:
-        return 0.1
+    #return 0.8 * math.exp(-0.003 * t)
+    return 0.1
 
 def use_worse(delta, t):
     return math.exp(-delta/t)
@@ -149,7 +138,8 @@ def progress_checker(prog, total):
     for j in range(10):
         if prog == j * total // 10:
             print(f'{j*10}%')
-def random_neighbor(G, s, starter, neighborhood, merge_threshold):
+
+def random_neighbor(G, s, starter, neighborhood, merge_threshold=0):
     '''
     A neighbor of an assignment is either a swap of two students, or
     moving one student into another's room
@@ -160,17 +150,19 @@ def random_neighbor(G, s, starter, neighborhood, merge_threshold):
     cur = starter.copy()
     while True:
         cur = starter.copy()
+        #print(cur)
+        movers = random.sample(list(cur.keys()), neighborhood)
+        rooms = random.sample(list(cur.values()), neighborhood)
         for i in range(neighborhood):
-            if random.uniform(0, 1) > merge_threshold:
-                random_swap(cur)
-            else:
-                random_merge(cur)
+            cur[movers[i]] = rooms[i]
+        if cur == starter:
+            continue;
         if is_valid_solution(cur, G, s, len(set(cur.values()))):
             break
     return cur
 
-def random_swap(D):
-    lst = random.sample(list(D.keys()), 2)
+def random_swap(D, starter):
+    lst = random.sample(set(list(D.values())), 2)
     v1 = D[lst[0]]
     v2 = D[lst[1]]
     D[lst[0]] = v2
@@ -179,27 +171,6 @@ def random_swap(D):
 def random_merge(D):
     lst = random.sample(list(D.keys()), 2)
     D[lst[0]] = D[lst[1]]
-
-def generate_neighborhood(G, n, k, starter, neighborhood=10):
-    '''
-    Generate all neighborhood of assignments, based at starter, that
-    maps n students to at most k rooms.
-
-    Returns a list of dictionary mappings.
-
-    TODO: I don't know how feasible this is considering that we don't want duplicates
-          of mappings with only room index differing. It's a much bigger issue with
-          large n.
-
-          e.g. For 3 students...
-          0 0     is the same as     0 1
-          1 1                        1 0
-          2 1                        2 0
-    '''
-    # Maybe try using Cartesian product of two np.arrays (student indexes and room indexes)
-    #   and then figure out which assignments are the same but with only room numbers
-    #   differing and remove them.
-    pass
 
 def find_largest_k(G, s, n):
     '''

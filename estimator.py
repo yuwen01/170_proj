@@ -79,30 +79,9 @@ def getBetterAssignment(G, s, D, maxRooms):
         return None
     return student, move
 
-
-def balance(G, budget, assignment):
-    # assignment here maps rooms to students
-    room_lim = budget / len(assignment)
-    new_rooms = {}
-    for room, students in assignment.items():
-        if calculate_stress_for_room(students, G) > room_lim:
-            # originally planned to just yeet the most stress inducing person
-            # clearly can't
-            # argmax = 0
-            # stressor = G.nodes[students[0]]['stress']
-            # for i, v in enumerate(students[1:]):
-            #     if G.nodes[v]['stress'] > stressor:
-            #         stressor = G.nodes[v]['stress']
-            #         argmax = i
-            first = students.pop()
-            assignment[room] = students
-            new_rooms[len(assignment) - 1 + len(new_rooms)] = [first]
-
-    assignment.update(new_rooms)
-
 if __name__ == "__main__":
     for fname in os.listdir("inputs/"):
-        if "large" in fname:
+        if "medium" in fname:
             path = os.path.join("inputs", fname)
             G, s = read_input_file(path)
 
@@ -114,6 +93,6 @@ if __name__ == "__main__":
             print("Total Happiness: {}".format(calculate_happiness(D, G)))
             print("Solving took {} seconds.".format(end - start))
             if path[-3:] == ".in":
-                write_output_file(D, f'estoutputs/{path[7:-3]}.out')
+                write_output_file(D, f'medium_outputs/{path[7:-3]}.out')
             else:
                 write_output_file(D, f'test/test.out')

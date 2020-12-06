@@ -20,9 +20,11 @@ def compare_outputs(fname):
 
     zipped = [(dirs[i], happinesses[i]) for i in range(len(dirs))]
     zipped.sort(key=lambda x: x[1])
-    with open(eval.txt, "w") as fo:
+    with open(evaluation_file, "w") as fo:
+        fo.write(fname + "\n\n")
         for z in zipped:
             fo.write(f'dir: {z[0]} happiness: {z[1]}\n')
-
+        fo.write("============================\n\n")
+        fo.close()
 if __name__ == "__main__":
     compare_outputs("large-1")
