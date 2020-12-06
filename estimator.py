@@ -102,7 +102,7 @@ def balance(G, budget, assignment):
 
 if __name__ == "__main__":
     for fname in os.listdir("inputs/"):
-        if "large" in fname:
+        if "medium" in fname:
             path = os.path.join("inputs", fname)
             G, s = read_input_file(path)
 
