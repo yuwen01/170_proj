@@ -96,7 +96,7 @@ if __name__ == "__main__":
             print(f"Solution: {D}, {k}")
             if D is None:
                 if path[-3:] == ".in":
-                    write_output_file({"NO SOLUTION": 1}, f'1sec_timeout_outputs/{path[7:-3]}.out')
+                    write_output_file({"NO SOLUTION": 1}, f'1sec_timeout_outputs/{path[7:-3]}-no-sol.out')
                     print(fname, " timed out. No solution found.")
                 else:
                     write_output_file(D, f'test/test.out')
@@ -107,7 +107,7 @@ if __name__ == "__main__":
             print("Solving took {} seconds.".format(end - start))
             if t == -1:
                 if path[-3:] == ".in":
-                    write_output_file(D, f'1sec_timeout_outputs/{path[7:-3]}-no-sol.out')
+                    write_output_file(D, f'1sec_timeout_outputs/{path[7:-3]}.out')
                     print(fname, " timed out.")
                 else:
                     write_output_file(D, f'test/test.out')
