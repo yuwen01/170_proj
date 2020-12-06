@@ -7,7 +7,7 @@ import os
 def bruteForce(G, s):
     bruteForce(G, s, 0)
 
-def bruteForce(G, s, timeoutInSeconds=5):
+def bruteForce(G, s, timeoutInSeconds=1):
     """
     Brute force with backtracking on solution validity
     Args:
@@ -89,12 +89,20 @@ if __name__ == "__main__":
             D, k, t = bruteForce(G, s)
             end = time.time()
             print(f"Solution: {D}, {k}")
+            if D is None:
+                if path[-3:] == ".in":
+                    write_output_file({"NO SOLUTION" : 1}, f'timeout_outputs/{path[7:-3]}.out')
+                    print(fname, " timed out. No solution found.")
+                else:
+                    write_output_file(D, f'test/test.out')
+                continue
+
             assert is_valid_solution(D, G, s, k)
             print("Total Happiness: {}".format(calculate_happiness(D, G)))
             print("Solving took {} seconds.".format(end - start))
             if t == -1:
                 if path[-3:] == ".in":
-                    write_output_file(D, f'timeout_outputs/{path[7:-3]}.out')
+                    write_output_file(D, f'timeout_outputs/{path[7:-3]}-no-sol.out')
                     print(fname, " timed out.")
                 else:
                     write_output_file(D, f'test/test.out')
