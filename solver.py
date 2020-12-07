@@ -3,7 +3,7 @@ from parse import read_input_file, write_output_file
 from utils import is_valid_solution, calculate_happiness, calculate_stress_for_room, convert_dictionary
 import sys, time
 from bruteforce import bruteForce
-from estimator import estimate
+from estimator2 import estimate
 
 
 def solve(G, s):
