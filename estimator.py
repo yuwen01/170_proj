@@ -122,7 +122,7 @@ def local_search(G, budget):
     return assignment, len(set(assignment.values()))
 
 
-def simulated_annealing(G, budget):
+def simulated_annealing(G, budget, startAssignment=None):
     """
     Simulated Annealing. Similar to hill climbing but it only needs to find a better neighbor instead
     of the best neighbor
@@ -133,9 +133,10 @@ def simulated_annealing(G, budget):
 
     """
     numStudents = len(G.nodes)
-    assignment = {}  # maps student to rooms
-    for s in range(numStudents):
-        assignment[s] = s
+    assignment = startAssignment  # maps student to rooms
+    if assignment is None:
+        for s in range(numStudents):
+            assignment[s] = s
 
     def accept_probability(delta, temperature):
         if temperature == 0:
@@ -242,7 +243,9 @@ if __name__ == "__main__":
             G, s = read_input_file(path)
 
             start = time.time()
-            D, k = estimate(G, s)
+            D, k = local_search(G, s)
+            print("Local Search Happiness: {}".format(calculate_happiness(D, G)))
+            D, k = simulated_annealing(G, s, D)
             end = time.time()
 
             assert is_valid_solution(D, G, s, k)
