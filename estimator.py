@@ -99,9 +99,14 @@ def getBetterAssignment(G, s, D, maxRooms):
     return student, move
 
 if __name__ == "__main__":
+<<<<<<< HEAD
+    for fname in os.listdir("inputs/"):
+        if "medium" in fname:
+=======
     for fname in sorted(os.listdir("inputs/")):
         if fname[:-3] + ".out" not in os.listdir("test_4_outputs"):
             print('pseudo greedying', fname)
+>>>>>>> 703dfae16fd6ce6b505b29a02584f0825ff6ef3b
             path = os.path.join("inputs", fname)
             G, s = read_input_file(path)
 
@@ -113,6 +118,10 @@ if __name__ == "__main__":
             print("Total Happiness: {}".format(calculate_happiness(D, G)))
             print("Solving took {} seconds.".format(end - start))
             if path[-3:] == ".in":
+<<<<<<< HEAD
+                write_output_file(D, f'med_est_outputs/{path[7:-3]}.out')
+=======
                 write_output_file(D, f'test_4_outputs/{path[7:-3]}.out')
+>>>>>>> 703dfae16fd6ce6b505b29a02584f0825ff6ef3b
             else:
                 write_output_file(D, f'test/test.out')
