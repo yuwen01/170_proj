@@ -114,28 +114,32 @@ def local_search(G, budget):
     for s in range(numStudents):
         assignment[s] = s
 
-    move = getBetterAssignment(G, budget, assignment, numStudents)
+    move = getBetterAssignment(G, budget, assignment, numStudents, 0)
     while move:
-        student, newRoom = move
+        student, newRoom, curHappiness = move
         assignment[student] = newRoom
-        move = getBetterAssignment(G, budget, assignment, numStudents)
+        move = getBetterAssignment(G, budget, assignment, numStudents, curHappiness)
     return assignment, len(set(assignment.values()))
 
 
-def getBetterAssignment(G, s, D, maxRooms):
-    curHappiness = calculate_happiness(D, G)
+def getBetterAssignment(G, s, D, maxRooms, curHappiness):
     student = None
     move = None
+    students = list(range(len(G.nodes)))
+    rooms = list(range(maxRooms))
+    random.shuffle(students)
 
-    for curStudent in random.shuffle(range(len(G.nodes))):
+    for curStudent in students:
         oldRoom = D[curStudent]
-        for newRoom in random.shuffle(range(maxRooms)):
+        random.shuffle(rooms)
+        for newRoom in rooms:
             D[curStudent] = newRoom
             if is_valid_solution(D, G, s, len(set(D.values()))):
                 newHappiness = calculate_happiness(D, G)
                 if curHappiness < newHappiness:
+                    print(newHappiness)
                     D[curStudent] = oldRoom
-                    return curStudent, newRoom
+                    return curStudent, newRoom, newHappiness
 
         D[curStudent] = oldRoom
 
@@ -145,9 +149,16 @@ def getBetterAssignment(G, s, D, maxRooms):
 
 
 if __name__ == "__main__":
-    for fname in os.listdir("inputs/"):
-        if "medium" in fname:
-            path = os.path.join("inputs", fname)
+    input_dir = "test_inputs"
+    timeout_fname = "test_outputs"
+    timeout_path = f"{timeout_fname}/"
+    solved_path = "test_outputs/"
+    for fname in os.listdir(input_dir):
+        isSolved = os.path.isfile(f"{solved_path}{fname[:-3]}.out")
+        isComputed = os.path.isfile(f"{timeout_path}{fname[:-3]}.out")
+        if "medium" in fname and not isSolved and not isComputed:
+            print("Starting fname: ", fname)
+            path = os.path.join(input_dir, fname)
             G, s = read_input_file(path)
 
             start = time.time()
@@ -158,6 +169,6 @@ if __name__ == "__main__":
             print("Total Happiness: {}".format(calculate_happiness(D, G)))
             print("Solving took {} seconds.".format(end - start))
             if path[-3:] == ".in":
-                write_output_file(D, f'estoutputs/{path[7:-3]}.out')
+                write_output_file(D, f'{timeout_fname}/{fname[:-3]}.out')
             else:
                 write_output_file(D, f'test/test.out')
