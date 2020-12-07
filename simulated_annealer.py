@@ -35,7 +35,7 @@ import time
 import random
 import math
 
-CYCLE_BUDGET = 300000
+CYCLE_BUDGET = 4000
 REPETITIONS = 15
 SAMPLE_SIZE = 1
 SAME_STREAK = 32
@@ -109,7 +109,7 @@ def solve(G, s, n, starter=None, timeoutInSeconds=180):
      streak_counter < SAME_STREAK:
         # Find the total happiness of the current assignment
         curr_happiness = calculate_happiness(curr_assignment, G)
-        #print(curr_happiness, i)
+        print(curr_happiness, i)
         new_assignment = {}
         # if we started recently, take a move thats likely to result in a new arrangement
         # otherwise, spread out search area, and do a different approach.
@@ -135,17 +135,20 @@ def solve(G, s, n, starter=None, timeoutInSeconds=180):
             # This is because we want to encourage randomizing if we just started
             #   looking at assignments, but discourage it later (but still possible)
             chance = use_worse(delta_happiness, i)
-            # print("delta -----------------------", delta_happiness)
-            # print("CHANCE ----------------------", chance)
-            if use_worse(delta_happiness, i) < random.uniform(0,1):
+            print("delta -----------------------", delta_happiness)
+            print("CHANCE ----------------------", chance)
+            if use_worse(delta_happiness, schedule(i)) > random.uniform(0,1):
                 #print("SWITCHING ANYWAY LOL=======================")
                 streak_counter = 0
                 curr_assignment = new_assignment
             else:
                 streak_counter += 1
         i += 1
-    print('finished one')
+    print('finished one\n\n\n\n\n\n\n\n\n\n\n')
     return best_assignment, num_rooms(best_assignment)
+
+def schedule(i):
+    return math.exp(-5*i)
 
 def randomMove(G, s, D, maxRooms):
     start = time.time()
@@ -169,12 +172,14 @@ def randomMove(G, s, D, maxRooms):
     return student, move
 
 def use_worse(delta, t):
+    # you see where it says t * 1.8
+    # lower the number
     if t == 0:
         return 0
     if delta == 0:
-        return math.exp(-50 / (t * 1.8))
+        return math.exp(-50 / (t))
     try:
-        return math.exp(delta / (t * 1.8))
+        return math.exp(delta / (t))
     except OverflowError:
         #print("oopsy")
         return 0
