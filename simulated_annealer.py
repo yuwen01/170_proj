@@ -35,7 +35,8 @@ import time
 import random
 import math
 
-CYCLE_BUDGET = 10000
+CYCLE_BUDGET = 10000000
+REPETITIONS = 50
 SAMPLE_SIZE = 10
 
 def main():
@@ -49,10 +50,10 @@ def main():
     alphanumeric = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
 
     # Iterate over files of chosen length in order
-    for filename in sorted(os.listdir("inputs/"), key=alphanumeric)[0:SAMPLE_SIZE]:
-        if 'large' in filename:
+    for filename in sorted(os.listdir("medium_inputs/"), key=alphanumeric)[0:SAMPLE_SIZE]:
+        if 'medium' in filename:
             print("annealing", filename)
-            path = os.path.join("inputs/", filename)
+            path = os.path.join("medium_inputs/", filename)
             G, s = read_input_file(path)
 
             #starter = read_output_dict(os.path.join("flattened_greedy_outputs", filename[:-3] + ".out"))
@@ -66,10 +67,17 @@ def main():
             starter = {}
             for i in range(n):
                 starter[i] = i
-            start = time.time()
-            D, k = solve(G, s, n, starter=starter)
-            end = time.time()
 
+            start = time.time()
+            D = starter
+            k = n
+            for i in range(REPETITIONS):
+                ND, Nk = solve(G, s, n, starter=starter)
+                if calculate_happiness(ND, G) > calculate_happiness(D, G):
+                    D = ND.copy()
+                    k = Nk
+
+            end = time.time()
             try:
                 assert is_valid_solution(D, G, s, k)
             except:
@@ -82,12 +90,12 @@ def main():
                 if path[-3:] == ".in":
                     write_output_file(D, f'test_outputs/{path[7:-3]}.out')
 
-def solve(G, s, n, starter=None, timeoutInSeconds=300):
+def solve(G, s, n, starter=None, timeoutInSeconds=5):
     largest_k = find_largest_k(G, s, n) # potentially use this?
     # assignment = {} # maps students to rooms
 
     # Generate a neighborhood based on greedy solution
-    curr_assignment = starter
+    curr_assignment = starter.copy()
 
     # Set current state/assignment to the initial assignment
     i = 0 # counter of how many times to loop, essentially alloted cycle budget
@@ -96,7 +104,7 @@ def solve(G, s, n, starter=None, timeoutInSeconds=300):
     while i < CYCLE_BUDGET and time.time() < timeoutInSeconds + starttime:
         # Find the total happiness of the current assignment
         curr_happiness = calculate_happiness(curr_assignment, G)
-        print(curr_happiness)
+        #print(curr_happiness)
         new_assignment = {}
         # if we started recently, take a move thats likely to result in a new arrangement
         # otherwise, spread out search area, and do a different approach.
