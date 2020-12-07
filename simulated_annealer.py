@@ -35,7 +35,7 @@ import time
 import random
 import math
 
-CYCLE_BUDGET = 10000000
+CYCLE_BUDGET = 3000
 REPETITIONS = 15
 SAMPLE_SIZE = 4
 SAME_STREAK = 20
@@ -109,7 +109,7 @@ def solve(G, s, n, starter=None, timeoutInSeconds=120):
      streak_counter < SAME_STREAK:
         # Find the total happiness of the current assignment
         curr_happiness = calculate_happiness(curr_assignment, G)
-        #print(streak_counter)
+        #print(curr_happiness, i)
         new_assignment = {}
         # if we started recently, take a move thats likely to result in a new arrangement
         # otherwise, spread out search area, and do a different approach.
@@ -141,6 +141,7 @@ def solve(G, s, n, starter=None, timeoutInSeconds=120):
             else:
                 streak_counter += 1
         i += 1
+    print('finished one')
     return best_assignment, num_rooms(best_assignment)
 
 def randomMove(G, s, D, maxRooms):
@@ -165,7 +166,14 @@ def randomMove(G, s, D, maxRooms):
     return student, move
 
 def use_worse(delta, t):
-    return 0.69 * math.exp(-0.00054 * t)
+    if delta == 0:
+        return 0.5
+
+    try:
+        return  0.69 * math.exp(-0.01 * t / delta)
+    except OverflowError:
+        print("oopsy")
+        return 0
 
 def progress_checker(prog, total):
     for j in range(10):
