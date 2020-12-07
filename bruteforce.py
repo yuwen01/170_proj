@@ -76,12 +76,12 @@ def bruteForce(G, s, timeoutInSeconds=600):
 if __name__ == "__main__":
     timeout_fnames = os.listdir("timeout_outputs")
     output_fnames = os.listdir("outputs")
-    for fname in os.listdir("inputs/"):
-        if "medium" in fname and f'{fname[:-3]}.out' not in timeout_fnames and \
+    for fname in os.listdir("shits_/"):
+        if f'{fname[:-3]}.out' not in timeout_fnames and \
             f'{fname[:-3]}.out' not in output_fnames:
             print("starting fname: ", fname)
 
-            path = os.path.join("inputs", fname)
+            path = os.path.join("shits_", fname)
             G, s = read_input_file(path)
 
             start = time.time()
@@ -91,17 +91,17 @@ if __name__ == "__main__":
             if D == None:
                 printf("couldnt find solution")
                 continue
-                
+
             assert is_valid_solution(D, G, s, k)
             print("Total Happiness: {}".format(calculate_happiness(D, G)))
             print("Solving took {} seconds.".format(end - start))
             if t == -1:
                 if path[-3:] == ".in":
-                    write_output_file(D, f'timeout_outputs/{path[7:-3]}.out')
+                    write_output_file(D, f'midnight_outs/{path[7:-3]}.out')
                 else:
                     write_output_file(D, f'test/test.out')
             else:
                 if path[-3:] == ".in":
-                    write_output_file(D, f'outputs/{path[7:-3]}.out')
+                    write_output_file(D, f'midnight_outs/{path[7:-3]}.out')
                 else:
                     write_output_file(D, f'test/test.out')
