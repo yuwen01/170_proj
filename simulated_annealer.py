@@ -36,9 +36,9 @@ import random
 import math
 
 CYCLE_BUDGET = 300000
-REPETITIONS = 15
+REPETITIONS = 20
 SAMPLE_SIZE = 1
-SAME_STREAK = 32
+SAME_STREAK = 40
 
 def main():
     '''
@@ -127,7 +127,7 @@ def solve(G, s, n, starter=None, timeoutInSeconds=180):
             curr_assignment = new_assignment;
             if new_happiness > best_happiness:
                 best_happiness = new_happiness
-                best_assignment = curr_assignment
+                best_assignment = curr_assignment.copy()
             streak_counter = 0
         else:
             # If new assignment is worse, still replace it if we haven't looped
@@ -172,9 +172,9 @@ def use_worse(delta, t):
     if t == 0:
         return 0
     if delta == 0:
-        return math.exp(-50 / (t * 1.8))
+        return math.exp(-0.01 / (t))
     try:
-        return math.exp(delta / (t * 1.8))
+        return math.exp(delta / (t))
     except OverflowError:
         #print("oopsy")
         return 0
