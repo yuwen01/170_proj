@@ -49,8 +49,8 @@ def main():
     alphanumeric = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
 
     # Iterate over files of chosen length in order
-    for filename in sorted(os.listdir("inputs/"), key=alphanumeric)[0:SAMPLE_SIZE]:
-        if 'large' in filename:
+    for filename in sorted(os.listdir("medium_inputs/"), key=alphanumeric)[0:SAMPLE_SIZE]:
+        if 'medium' in filename:
             print("annealing", filename)
             path = os.path.join("inputs/", filename)
             G, s = read_input_file(path)
@@ -82,7 +82,7 @@ def main():
                 if path[-3:] == ".in":
                     write_output_file(D, f'test_outputs/{path[7:-3]}.out')
 
-def solve(G, s, n, starter=None, timeoutInSeconds=120):
+def solve(G, s, n, starter=None, timeoutInSeconds=300):
     largest_k = find_largest_k(G, s, n) # potentially use this?
     # assignment = {} # maps students to rooms
 
@@ -101,7 +101,9 @@ def solve(G, s, n, starter=None, timeoutInSeconds=120):
         # if we started recently, take a move thats likely to result in a new arrangement
         # otherwise, spread out search area, and do a different approach.
         if i < CYCLE_BUDGET * 0.2:
-            new_assignment = randomMove(G, s, curr_assignment, num_rooms(curr_assignment))
+            stud, room = randomMove(G, s, curr_assignment, num_rooms(curr_assignment))
+            new_assignment = curr_assignment.copy()
+            new_assignment[stud] = room
         else:
             new_assignment = random_neighbor(G, s, starter, neighborhood_size(i))
 
@@ -119,7 +121,7 @@ def solve(G, s, n, starter=None, timeoutInSeconds=120):
             #   very many times (e.g. i is high)
             # This is because we want to encourage randomizing if we just started
             #   looking at assignments, but discourage it later (but still possible)
-            if use_worse() > random.uniform(0,1):
+            if use_worse(delta_happiness, i) > random.uniform(0,1):
                 curr_assignment = new_assignment
 
         i += 1
