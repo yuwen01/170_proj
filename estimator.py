@@ -51,33 +51,38 @@ def greedy_solution(G, budget):
     return assignment, len(set(assignment.values()))
 
 def schedule(t):
-    return 0.49 * math.exp(-0.07 * t) + 0.005
+    return 0.49 * math.exp(-0.07 * t)
 
 def randomMove(G, s, D, maxRooms):
     start = time.time()
-    curStudent = None
-    newRoom = None
-    while True:
-        curStudent = random.choice(range(len(G.nodes)))
-        oldRoom = D[curStudent]
-        newRoom = random.choice(list(range(maxRooms)))
-        if oldRoom == newRoom:
-            continue
-        D[curStudent] = newRoom
-        if is_valid_solution(D, G, s, num_rooms(D)):
-            D[curStudent] = oldRoom
-            break
-    print("random took", time.time() - start, "seconds")
-    return curStudent, newRoom
-
-def getBetterAssignment(G, s, D, maxRooms):
     maxHappiness = calculate_happiness(D, G)
     student = None
     move = None
-
-    for curStudent in random.sample(list(range(len(G.nodes))), len(G.nodes)):
+    #print(range(len(G.nodes)))
+    for curStudent in random.sample(list(range(len(G.nodes))), len(list(range(len(G.nodes))))):
         oldRoom = D[curStudent]
         for newRoom in random.sample(list(range(maxRooms)), maxRooms):
+            D[curStudent] = newRoom
+            if is_valid_solution(D, G, s, len(set(D.values()))):
+                D[curStudent] = oldRoom
+                return curStudent, newRoom
+
+        D[curStudent] = oldRoom
+
+    if student is None:
+        return None
+    print("random took", time.time() - start)
+    return student, move
+
+def getBetterAssignment(G, s, D, maxRooms):
+    start = time.time()
+    maxHappiness = calculate_happiness(D, G)
+    student = None
+    move = None
+    print(range(len(G.nodes)))
+    for curStudent in list(range(len(G.nodes))):
+        oldRoom = D[curStudent]
+        for newRoom in list(range(maxRooms)):
             D[curStudent] = newRoom
             if is_valid_solution(D, G, s, len(set(D.values()))):
                 newHappiness = calculate_happiness(D, G)
@@ -90,6 +95,7 @@ def getBetterAssignment(G, s, D, maxRooms):
 
     if student is None:
         return None
+    print("greedy took", time.time() - start)
     return student, move
 
 if __name__ == "__main__":

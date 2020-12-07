@@ -24,7 +24,6 @@ def compare_outputs(fname, raw_dirs, evaluation_file, dest_dir):
     zipped = [(dirs[i], happinesses[i]) for i in range(len(dirs))]
     zipped.sort(key=lambda x: -x[1])
 
-    final_dir = "final/"
     with open(evaluation_file, "w") as fo:
         fo.write(fname + "\n\n")
         for z in zipped:
@@ -33,13 +32,15 @@ def compare_outputs(fname, raw_dirs, evaluation_file, dest_dir):
         fo.close()
 
     print(zipped[0][0])
-    copyfile(os.path.join(zipped[0][0], fname + ".out"), os.path.join(dest_dir, fname + ".out"))
-    return 0
+    try:
+        copyfile(os.path.join(zipped[0][0], fname + ".out"), os.path.join(dest_dir, fname + ".out"))
+    finally:
+        return 0
 
 if __name__ == "__main__":
-    dirs = ["outputs", "test_4_outputs", "greedy_outputs"]
+    dirs = ["test_4_outputs", "test_outputs", "final"]
     evaluation_file = "summary.txt"
-    dest_dir = "final/"
+    dest_dir = "compare_dest/"
     for fname in os.listdir(dirs[0]):
         if compare_outputs(fname[:-4], dirs, evaluation_file, dest_dir) == -1:
             print('nice file, idiot')
