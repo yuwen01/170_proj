@@ -98,7 +98,7 @@ def getBetterAssignment(G, s, D, maxRooms):
     return student, move
 
 if __name__ == "__main__":
-    for fname in sorted(os.listdir("hards_/")):
+    for fname in sorted(os.listdir("hards1/")):
         if fname[:-3] + ".out" not in os.listdir("midnight_outs"):
             print('pseudo greedying', fname)
             path = os.path.join("inputs", fname)

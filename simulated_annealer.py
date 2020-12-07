@@ -36,9 +36,9 @@ import random
 import math
 
 CYCLE_BUDGET = 300000
-REPETITIONS = 1
+REPETITIONS = 25
 SAMPLE_SIZE = 1
-SAME_STREAK = 40000000
+SAME_STREAK = 100
 
 def main():
     '''
@@ -51,9 +51,9 @@ def main():
     alphanumeric = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
 
     # Iterate over files of chosen length in order
-    for filename in sorted(os.listdir("hards_/"), key=alphanumeric):
+    for filename in sorted(os.listdir("shits_/"), key=alphanumeric):
         print("annealing", filename)
-        path = os.path.join("hards_/", filename)
+        path = os.path.join("shits_/", filename)
         G, s = read_input_file(path)
 
         #starter = read_output_dict(os.path.join("flattened_greedy_outputs", filename[:-3] + ".out"))
@@ -90,7 +90,7 @@ def main():
             if path[-3:] == ".in":
                 write_output_file(D, f'midnight_outs/{path[7:-3]}.out')
 
-def solve(G, s, n, starter=None, timeoutInSeconds=400):
+def solve(G, s, n, starter=None, timeoutInSeconds=120):
     largest_k = find_largest_k(G, s, n) # potentially use this?
     # assignment = {} # maps students to rooms
 
@@ -171,8 +171,6 @@ def randomMove(G, s, D, maxRooms):
 def use_worse(delta, t):
     if t == 0:
         return 0
-    if delta == 0:
-        return math.exp(-0.01 / (t))
     try:
         return math.exp(delta / (t))
     except OverflowError:
