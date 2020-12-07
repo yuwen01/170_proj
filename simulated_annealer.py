@@ -36,9 +36,9 @@ import random
 import math
 
 CYCLE_BUDGET = 300000
-REPETITIONS = 20
+REPETITIONS = 1
 SAMPLE_SIZE = 1
-SAME_STREAK = 40
+SAME_STREAK = 40000000
 
 def main():
     '''
@@ -90,7 +90,7 @@ def main():
             if path[-3:] == ".in":
                 write_output_file(D, f'midnight_outs/{path[7:-3]}.out')
 
-def solve(G, s, n, starter=None, timeoutInSeconds=180):
+def solve(G, s, n, starter=None, timeoutInSeconds=400):
     largest_k = find_largest_k(G, s, n) # potentially use this?
     # assignment = {} # maps students to rooms
 
