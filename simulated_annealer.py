@@ -127,7 +127,7 @@ def solve(G, s, n, starter=None, timeoutInSeconds=180):
             curr_assignment = new_assignment;
             if new_happiness > best_happiness:
                 best_happiness = new_happiness
-                best_assignment = curr_assignment
+                best_assignment = curr_assignment.copy()
             streak_counter = 0
         else:
             # If new assignment is worse, still replace it if we haven't looped
@@ -148,7 +148,7 @@ def solve(G, s, n, starter=None, timeoutInSeconds=180):
     return best_assignment, num_rooms(best_assignment)
 
 def schedule(i):
-    return math.exp(-5*i)
+    return math.exp(i)
 
 def randomMove(G, s, D, maxRooms):
     start = time.time()
