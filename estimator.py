@@ -143,18 +143,19 @@ def simulated_annealing(G, budget):
         else:
             return math.exp(-delta / temperature)
 
-    iteration = -1
-    temperature = 100
-    decay = 0.99
+    #iteration = -1
+    temperature = 50
+    decay = 0.99931
+    cutoff = 0.1
     curHappiness = 0
     move = getRandomMove(G, budget, assignment, numStudents)
     while move:
-        iteration += 1
+        #iteration += 1
         student, newRoom, newHappiness = move
-        temperature *= 0 if temperature < 1e-10 else decay
+        temperature *= 0 if temperature < cutoff else decay
 
-        if iteration % 100 == 0:
-            print(newHappiness)
+        # if iteration % 100 == 0:
+        #     print(newHappiness)
 
         if temperature > 0:
             # Do simulated annealing
@@ -216,7 +217,7 @@ def getBetterAssignment(G, s, D, maxRooms, curHappiness):
             if is_valid_solution(D, G, s, len(set(D.values()))):
                 newHappiness = calculate_happiness(D, G)
                 if curHappiness < newHappiness:
-                    print(curHappiness, newHappiness)
+                    #print(curHappiness, newHappiness)
                     D[curStudent] = oldRoom
                     return curStudent, newRoom, newHappiness
 
@@ -228,14 +229,14 @@ def getBetterAssignment(G, s, D, maxRooms, curHappiness):
 
 
 if __name__ == "__main__":
-    input_dir = "test_inputs"
-    timeout_fname = "test_outputs"
+    input_dir = "hards_"
+    timeout_fname = "submission3"
     timeout_path = f"{timeout_fname}/"
-    solved_path = "test_outputs/"
-    for fname in os.listdir(input_dir):
+    solved_path = "submission3/"
+    for fname in sorted(os.listdir(input_dir), reverse=False):
         isSolved = os.path.isfile(f"{solved_path}{fname[:-3]}.out")
         isComputed = os.path.isfile(f"{timeout_path}{fname[:-3]}.out")
-        if "large" in fname and not isSolved and not isComputed:
+        if not isSolved and not isComputed:
             print("Starting fname: ", fname)
             path = os.path.join(input_dir, fname)
             G, s = read_input_file(path)
@@ -246,8 +247,8 @@ if __name__ == "__main__":
 
             assert is_valid_solution(D, G, s, k)
             print("Total Happiness: {}".format(calculate_happiness(D, G)))
-            print("Solving took {} seconds.".format(end - start))
+            print(f"Solving {fname} took {end - start} seconds.")
             if path[-3:] == ".in":
-                write_output_file(D, f'{timeout_fname}/{fname[:-3]}.out')
+                write_output_file(D, f'{solved_path}{fname[:-3]}.out')
             else:
                 write_output_file(D, f'test/test.out')
