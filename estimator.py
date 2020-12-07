@@ -2,9 +2,7 @@ import networkx as nx
 from parse import read_input_file, write_output_file
 from utils import is_valid_solution, calculate_happiness, calculate_stress_for_room, calculate_happiness_for_room, \
     convert_dictionary
-import sys
-import os
-import time
+import os, time, random
 
 ''' simulated annealing bay bee
 G: the graph of the students and their breakout rooms
@@ -21,7 +19,7 @@ also i am clearly not going to have time to finish this tonight i am so tired
 
 
 def estimate(G, s, neighborhood=2, samples_per=15, kept_per=4, loops=100, seed=69):
-    return greedy_solution(G, s)
+    return local_search(G, s)
 
 
 ''' the point of this is to get a starting point. Ideally, search radius will decrease over time,
@@ -49,34 +47,13 @@ def greedy_solution(G, budget, neighborhood=-1, base=None):
     for s in range(numStudents):
         assignment[s] = s
 
-    move = getBetterAssignment(G, budget, assignment, numStudents)
+    move = getBestAssignment(G, budget, assignment, numStudents)
     while move:
         student, newRoom = move
         assignment[student] = newRoom
-        move = getBetterAssignment(G, budget, assignment, numStudents)
+        move = getBestAssignment(G, budget, assignment, numStudents)
     return assignment, len(set(assignment.values()))
 
-def getBetterAssignment(G, s, D, maxRooms):
-    maxHappiness = calculate_happiness(D, G)
-    student = None
-    move = None
-
-    for curStudent in range(len(G.nodes)):
-        oldRoom = D[curStudent]
-        for newRoom in range(maxRooms):
-            D[curStudent] = newRoom
-            if is_valid_solution(D, G, s, len(set(D.values()))):
-                newHappiness = calculate_happiness(D, G)
-                if maxHappiness < newHappiness:
-                    maxHappiness = newHappiness
-                    student = curStudent
-                    move = newRoom
-
-        D[curStudent] = oldRoom
-
-    if student is None:
-        return None
-    return student, move
 
 def getBestAssignment(G, s, D, maxRooms):
     maxHappiness = calculate_happiness(D, G)
@@ -120,6 +97,52 @@ def balance(G, budget, assignment):
             new_rooms[len(assignment) - 1 + len(new_rooms)] = [first]
 
     assignment.update(new_rooms)
+
+
+def local_search(G, budget):
+    """
+    Local Search. Similar to hill climbing but it only needs to find a better neighbor instead
+    of the best neighbor
+    Args:
+        G:
+        budget:
+    Returns:
+
+    """
+    numStudents = len(G.nodes)
+    assignment = {}  # maps student to rooms
+    for s in range(numStudents):
+        assignment[s] = s
+
+    move = getBetterAssignment(G, budget, assignment, numStudents)
+    while move:
+        student, newRoom = move
+        assignment[student] = newRoom
+        move = getBetterAssignment(G, budget, assignment, numStudents)
+    return assignment, len(set(assignment.values()))
+
+
+def getBetterAssignment(G, s, D, maxRooms):
+    curHappiness = calculate_happiness(D, G)
+    student = None
+    move = None
+
+    for curStudent in random.shuffle(range(len(G.nodes))):
+        oldRoom = D[curStudent]
+        for newRoom in random.shuffle(range(maxRooms)):
+            D[curStudent] = newRoom
+            if is_valid_solution(D, G, s, len(set(D.values()))):
+                newHappiness = calculate_happiness(D, G)
+                if curHappiness < newHappiness:
+                    D[curStudent] = oldRoom
+                    return curStudent, newRoom
+
+        D[curStudent] = oldRoom
+
+    if student is None:
+        return None
+    return student, move
+
 
 if __name__ == "__main__":
     for fname in os.listdir("inputs/"):
