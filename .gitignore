@@ -187,4 +187,6 @@ test_0_outputs/
 test_3_outputs/
 test_4_outputs/
 test_5_outputs/
+midnight_outs/
+submission.json
 tst_outputs/

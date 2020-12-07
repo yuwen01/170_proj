@@ -1,0 +1,5 @@
+large-102
+
+dir: greedy_outputs happiness: 105.0
+============================
+

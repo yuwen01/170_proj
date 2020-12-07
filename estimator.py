@@ -38,16 +38,17 @@ def greedy_solution(G, budget):
         assignment[s] = s
 
     counter = 0
+    timeout = 180
     move = getBetterAssignment(G, budget, assignment, numStudents)
+    start = time.time()
     while move:
         student, newRoom = move
         assignment[student] = newRoom
-        if (random.random() > schedule(counter)):
+        if counter > 400:
             move = getBetterAssignment(G, budget, assignment, numStudents)
         else:
             move = randomMove(G, budget, assignment, numStudents)
         counter += 1
-    print("COUNTER IS ", counter)
     return assignment, len(set(assignment.values()))
 
 def schedule(t):
@@ -79,7 +80,6 @@ def getBetterAssignment(G, s, D, maxRooms):
     maxHappiness = calculate_happiness(D, G)
     student = None
     move = None
-    print(range(len(G.nodes)))
     for curStudent in list(range(len(G.nodes))):
         oldRoom = D[curStudent]
         for newRoom in list(range(maxRooms)):
@@ -95,18 +95,12 @@ def getBetterAssignment(G, s, D, maxRooms):
 
     if student is None:
         return None
-    print("greedy took", time.time() - start)
     return student, move
 
 if __name__ == "__main__":
-<<<<<<< HEAD
-    for fname in os.listdir("inputs/"):
-        if "medium" in fname:
-=======
-    for fname in sorted(os.listdir("inputs/")):
-        if fname[:-3] + ".out" not in os.listdir("test_4_outputs"):
+    for fname in sorted(os.listdir("hards1/")):
+        if fname[:-3] + ".out" not in os.listdir("midnight_outs"):
             print('pseudo greedying', fname)
->>>>>>> 703dfae16fd6ce6b505b29a02584f0825ff6ef3b
             path = os.path.join("inputs", fname)
             G, s = read_input_file(path)
 
@@ -118,10 +112,6 @@ if __name__ == "__main__":
             print("Total Happiness: {}".format(calculate_happiness(D, G)))
             print("Solving took {} seconds.".format(end - start))
             if path[-3:] == ".in":
-<<<<<<< HEAD
-                write_output_file(D, f'med_est_outputs/{path[7:-3]}.out')
-=======
-                write_output_file(D, f'test_4_outputs/{path[7:-3]}.out')
->>>>>>> 703dfae16fd6ce6b505b29a02584f0825ff6ef3b
+                write_output_file(D, f'midnight_outs/{path[7:-3]}.out')
             else:
                 write_output_file(D, f'test/test.out')
