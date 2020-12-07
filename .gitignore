@@ -180,3 +180,11 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# Ignore outputs, except for greedies, which i might use later.
+medium_outputs/
+test_0_outputs/
+test_3_outputs/
+test_4_outputs/
+test_5_outputs/
+tst_outputs/

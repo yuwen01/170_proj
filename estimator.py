@@ -1,10 +1,11 @@
 import networkx as nx
-from parse import read_input_file, write_output_file
-from utils import is_valid_solution, calculate_happiness, calculate_stress_for_room, calculate_happiness_for_room, \
-    convert_dictionary
+from parse import *
+from utils import *
 import sys
 import os
 import time
+import random
+import math
 
 ''' simulated annealing bay bee
 G: the graph of the students and their breakout rooms
@@ -20,26 +21,13 @@ also i am clearly not going to have time to finish this tonight i am so tired
 '''
 
 
-def estimate(G, s, neighborhood=2, samples_per=15, kept_per=4, loops=100, seed=69):
+def estimate(G, s):
     return greedy_solution(G, s)
 
 
-''' the point of this is to get a starting point. Ideally, search radius will decrease over time,
-so we don't have such consistent starts. I'm only doing this because I don't know how to randomly
-generate a starting solution that meets stress requirements
-
-this algorithm sucks ass
-'''
-
-
-def greedy_solution(G, budget, neighborhood=-1, base=None):
+def greedy_solution(G, budget):
     """
     Hill climbing solution
-    Args:
-        G:
-        budget:
-        neighborhood:
-        base:
 
     Returns:
 
@@ -49,22 +37,47 @@ def greedy_solution(G, budget, neighborhood=-1, base=None):
     for s in range(numStudents):
         assignment[s] = s
 
+    counter = 0
     move = getBetterAssignment(G, budget, assignment, numStudents)
     while move:
         student, newRoom = move
         assignment[student] = newRoom
-        move = getBetterAssignment(G, budget, assignment, numStudents)
+        if (random.random() > schedule(counter)):
+            move = getBetterAssignment(G, budget, assignment, numStudents)
+        else:
+            move = randomMove(G, budget, assignment, numStudents)
+        counter += 1
+    print("COUNTER IS ", counter)
     return assignment, len(set(assignment.values()))
 
+def schedule(t):
+    return 0.49 * math.exp(-0.07 * t) + 0.005
+
+def randomMove(G, s, D, maxRooms):
+    start = time.time()
+    curStudent = None
+    newRoom = None
+    while True:
+        curStudent = random.choice(range(len(G.nodes)))
+        oldRoom = D[curStudent]
+        newRoom = random.choice(list(range(maxRooms)))
+        if oldRoom == newRoom:
+            continue
+        D[curStudent] = newRoom
+        if is_valid_solution(D, G, s, num_rooms(D)):
+            D[curStudent] = oldRoom
+            break
+    print("random took", time.time() - start, "seconds")
+    return curStudent, newRoom
 
 def getBetterAssignment(G, s, D, maxRooms):
     maxHappiness = calculate_happiness(D, G)
     student = None
     move = None
 
-    for curStudent in range(len(G.nodes)):
+    for curStudent in random.sample(list(range(len(G.nodes))), len(G.nodes)):
         oldRoom = D[curStudent]
-        for newRoom in range(maxRooms):
+        for newRoom in random.sample(list(range(maxRooms)), maxRooms):
             D[curStudent] = newRoom
             if is_valid_solution(D, G, s, len(set(D.values()))):
                 newHappiness = calculate_happiness(D, G)
@@ -80,8 +93,9 @@ def getBetterAssignment(G, s, D, maxRooms):
     return student, move
 
 if __name__ == "__main__":
-    for fname in os.listdir("inputs/"):
-        if "medium" in fname:
+    for fname in sorted(os.listdir("inputs/")):
+        if fname[:-3] + ".out" not in os.listdir("test_4_outputs"):
+            print('pseudo greedying', fname)
             path = os.path.join("inputs", fname)
             G, s = read_input_file(path)
 
@@ -93,6 +107,6 @@ if __name__ == "__main__":
             print("Total Happiness: {}".format(calculate_happiness(D, G)))
             print("Solving took {} seconds.".format(end - start))
             if path[-3:] == ".in":
-                write_output_file(D, f'medium_outputs/{path[7:-3]}.out')
+                write_output_file(D, f'test_4_outputs/{path[7:-3]}.out')
             else:
                 write_output_file(D, f'test/test.out')
