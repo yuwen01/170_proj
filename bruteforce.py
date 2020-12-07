@@ -7,7 +7,7 @@ import os
 def bruteForce(G, s):
     bruteForce(G, s, 0)
 
-def bruteForce(G, s, timeoutInSeconds=300):
+def bruteForce(G, s, timeoutInSeconds=600):
     """
     Brute force with backtracking on solution validity
     Args:
@@ -80,6 +80,7 @@ if __name__ == "__main__":
         if "medium" in fname and f'{fname[:-3]}.out' not in timeout_fnames and \
             f'{fname[:-3]}.out' not in output_fnames:
             print("starting fname: ", fname)
+
             path = os.path.join("inputs", fname)
             G, s = read_input_file(path)
 
@@ -87,6 +88,10 @@ if __name__ == "__main__":
             D, k, t = bruteForce(G, s)
             end = time.time()
             print(f"Solution: {D}, {k}")
+            if D == None:
+                printf("couldnt find solution")
+                continue
+                
             assert is_valid_solution(D, G, s, k)
             print("Total Happiness: {}".format(calculate_happiness(D, G)))
             print("Solving took {} seconds.".format(end - start))

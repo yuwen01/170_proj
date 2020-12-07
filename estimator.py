@@ -102,7 +102,7 @@ def balance(G, budget, assignment):
 
 if __name__ == "__main__":
     for fname in os.listdir("inputs/"):
-        if "large" in fname:
+        if "medium" in fname:
             path = os.path.join("inputs", fname)
             G, s = read_input_file(path)
 
@@ -114,6 +114,6 @@ if __name__ == "__main__":
             print("Total Happiness: {}".format(calculate_happiness(D, G)))
             print("Solving took {} seconds.".format(end - start))
             if path[-3:] == ".in":
-                write_output_file(D, f'estoutputs/{path[7:-3]}.out')
+                write_output_file(D, f'med_est_outputs/{path[7:-3]}.out')
             else:
                 write_output_file(D, f'test/test.out')
