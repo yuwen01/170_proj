@@ -35,8 +35,8 @@ import time
 import random
 import math
 
-CYCLE_BUDGET = 1000
-SAMPLE_SIZE = 1
+CYCLE_BUDGET = 10000
+SAMPLE_SIZE = 10
 
 def main():
     '''
@@ -49,10 +49,10 @@ def main():
     alphanumeric = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
 
     # Iterate over files of chosen length in order
-    for filename in sorted(os.listdir("inputs/"), key=alphanumeric)[0:SAMPLE_SIZE]:
-        if 'large' in filename:
+    for filename in sorted(os.listdir("medium_inputs/"), key=alphanumeric)[0:SAMPLE_SIZE]:
+        if 'medium' in filename:
             print("annealing", filename)
-            path = os.path.join("inputs/", filename)
+            path = os.path.join("medium_inputs/", filename)
             G, s = read_input_file(path)
 
             #starter = read_output_dict(os.path.join("flattened_greedy_outputs", filename[:-3] + ".out"))
@@ -64,9 +64,8 @@ def main():
                 fo.close()
 
             starter = {}
-            starter = read_output_dict(os.path.join("flattened_greedy_outputs", filename[:-3] + ".out"))
-            # for i in range(n):
-            #     starter[i] = i
+            for i in range(n):
+                starter[i] = i
             start = time.time()
             D, k = solve(G, s, n, starter=starter)
             end = time.time()
@@ -81,7 +80,7 @@ def main():
 
                 # Write output file to sa_outputs/
                 if path[-3:] == ".in":
-                    write_output_file(D, f'test_0_outputs/{path[7:-3]}.out')
+                    write_output_file(D, f'test_outputs/{path[7:-3]}.out')
 
 def solve(G, s, n, starter=None, timeoutInSeconds=300):
     largest_k = find_largest_k(G, s, n) # potentially use this?
@@ -98,9 +97,16 @@ def solve(G, s, n, starter=None, timeoutInSeconds=300):
         # Find the total happiness of the current assignment
         curr_happiness = calculate_happiness(curr_assignment, G)
 
-        new_assignment = random_neighbor(G, s, starter, neighborhood_size(i))
+        new_assignment = {}
+        # if we started recently, take a move thats likely to result in a new arrangement
+        # otherwise, spread out search area, and do a different approach.
+        if i < CYCLE_BUDGET * 0.2:
+            stud, room = randomMove(G, s, curr_assignment, num_rooms(curr_assignment))
+            new_assignment = curr_assignment.copy()
+            new_assignment[stud] = room
+        else:
+            new_assignment = random_neighbor(G, s, starter, neighborhood_size(i))
 
-        #all_assignments[random.randint(0, len(all_assignments))]
         # Find the total happiness of the new assignment
         new_happiness = calculate_happiness(new_assignment, G)
 
@@ -108,31 +114,41 @@ def solve(G, s, n, starter=None, timeoutInSeconds=300):
 
         # If the new assignment is better, then replace the current assignment
         curr_assignment = new_assignment
-        # if delta_happiness >= 0:
-        #     curr_assignment = new_assignment
-        # else:
-        #     # If new assignment is worse, still replace it if we haven't looped
-        #     #   very many times (e.g. i is high)
-        #     # This is because we want to encourage randomizing if we just started
-        #     #   looking at assignments, but discourage it later (but still possible)
-        #     if use_worse(delta_happiness, CYCLE_BUDGET -  i) > random.uniform(0,1):
-        #         curr_assignment = new_assignment
-
+        if delta_happiness >= 0:
+            curr_assignment = new_assignment;
+        else:
+            # If new assignment is worse, still replace it if we haven't looped
+            #   very many times (e.g. i is high)
+            # This is because we want to encourage randomizing if we just started
+            #   looking at assignments, but discourage it later (but still possible)
+            if use_worse(delta_happiness, i) > random.uniform(0,1):
+                curr_assignment = new_assignment
         i += 1
-
     return curr_assignment, num_rooms(curr_assignment)
 
-# Pick a random neighbor of starter
-def neighborhood_size(t):
-    #return int(20 * math.exp(-0.004 * t) + 1)
-    return 6
+def randomMove(G, s, D, maxRooms):
+    start = time.time()
+    maxHappiness = calculate_happiness(D, G)
+    student = None
+    move = None
+    #print(range(len(G.nodes)))
+    for curStudent in random.sample(list(range(len(G.nodes))), len(list(range(len(G.nodes))))):
+        oldRoom = D[curStudent]
+        for newRoom in random.sample(list(range(maxRooms)), maxRooms):
+            D[curStudent] = newRoom
+            if is_valid_solution(D, G, s, len(set(D.values()))):
+                D[curStudent] = oldRoom
+                return curStudent, newRoom
 
-def merge_prob(t):
-    #return 0.8 * math.exp(-0.003 * t)
-    return 0.1
+        D[curStudent] = oldRoom
+
+    if student is None:
+        return None
+    print("random took", time.time() - start)
+    return student, move
 
 def use_worse(delta, t):
-    return math.exp(-delta/t)
+    return 0.69 * math.exp(-0.003 * t)
 
 def progress_checker(prog, total):
     for j in range(10):
@@ -152,7 +168,7 @@ def random_neighbor(G, s, starter, neighborhood, merge_threshold=0):
         cur = starter.copy()
         #print(cur)
         movers = random.sample(list(cur.keys()), neighborhood)
-        rooms = random.sample(list(cur.values()), neighborhood)
+        rooms = random.choice(list(cur.values()), neighborhood)
         for i in range(neighborhood):
             cur[movers[i]] = rooms[i]
         if cur == starter:
@@ -160,17 +176,6 @@ def random_neighbor(G, s, starter, neighborhood, merge_threshold=0):
         if is_valid_solution(cur, G, s, len(set(cur.values()))):
             break
     return cur
-
-def random_swap(D, starter):
-    lst = random.sample(set(list(D.values())), 2)
-    v1 = D[lst[0]]
-    v2 = D[lst[1]]
-    D[lst[0]] = v2
-    D[lst[1]] = v1
-
-def random_merge(D):
-    lst = random.sample(list(D.keys()), 2)
-    D[lst[0]] = D[lst[1]]
 
 def find_largest_k(G, s, n):
     '''
