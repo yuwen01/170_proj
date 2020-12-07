@@ -74,8 +74,8 @@ def bruteForce(G, s, timeoutInSeconds=600):
     return bestAssignment, bestNumRooms, timeout
 
 if __name__ == "__main__":
-    timeout_fnames = os.listdir("timeout_outputs")
-    output_fnames = os.listdir("outputs")
+    timeout_fnames = os.listdir("midnight_outs")
+    output_fnames = os.listdir("midnight_outs")
     for fname in os.listdir("shits_/"):
         if f'{fname[:-3]}.out' not in timeout_fnames and \
             f'{fname[:-3]}.out' not in output_fnames:
