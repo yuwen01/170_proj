@@ -36,8 +36,9 @@ import random
 import math
 
 CYCLE_BUDGET = 10000000
-REPETITIONS = 50
-SAMPLE_SIZE = 10
+REPETITIONS = 15
+SAMPLE_SIZE = 4
+SAME_STREAK = 20
 
 def main():
     '''
@@ -50,47 +51,46 @@ def main():
     alphanumeric = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
 
     # Iterate over files of chosen length in order
-    for filename in sorted(os.listdir("medium_inputs/"), key=alphanumeric)[0:SAMPLE_SIZE]:
-        if 'medium' in filename:
-            print("annealing", filename)
-            path = os.path.join("medium_inputs/", filename)
-            G, s = read_input_file(path)
+    for filename in sorted(os.listdir("hards_/"), key=alphanumeric)[0:SAMPLE_SIZE]:
+        print("annealing", filename)
+        path = os.path.join("hards_/", filename)
+        G, s = read_input_file(path)
 
-            #starter = read_output_dict(os.path.join("flattened_greedy_outputs", filename[:-3] + ".out"))
-            # Find number of students, probably a better way exists
-            with open(path, "r") as fo:
-                n = fo.readline().strip()
-                assert n.isdigit()
-                n = int(n)
-                fo.close()
+        #starter = read_output_dict(os.path.join("flattened_greedy_outputs", filename[:-3] + ".out"))
+        # Find number of students, probably a better way exists
+        with open(path, "r") as fo:
+            n = fo.readline().strip()
+            assert n.isdigit()
+            n = int(n)
+            fo.close()
 
-            starter = {}
-            for i in range(n):
-                starter[i] = i
+        starter = {}
+        for i in range(n):
+            starter[i] = i
 
-            start = time.time()
-            D = starter
-            k = n
-            for i in range(REPETITIONS):
-                ND, Nk = solve(G, s, n, starter=starter)
-                if calculate_happiness(ND, G) > calculate_happiness(D, G):
-                    D = ND.copy()
-                    k = Nk
+        start = time.time()
+        D = starter
+        k = n
+        for i in range(REPETITIONS):
+            ND, Nk = solve(G, s, n, starter=starter)
+            if calculate_happiness(ND, G) > calculate_happiness(D, G):
+                D = ND.copy()
+                k = Nk
 
-            end = time.time()
-            try:
-                assert is_valid_solution(D, G, s, k)
-            except:
-                print('=====CALCULATED SOLUTION IS INVALID=====')
-            finally:
-                print("Total Happiness: {}".format(calculate_happiness(D, G)))
-                print("Solving took {} seconds".format(end - start))
+        end = time.time()
+        try:
+            assert is_valid_solution(D, G, s, k)
+        except:
+            print('=====CALCULATED SOLUTION IS INVALID=====')
+        finally:
+            print("Total Happiness: {}".format(calculate_happiness(D, G)))
+            print("Solving took {} seconds".format(end - start))
 
-                # Write output file to sa_outputs/
-                if path[-3:] == ".in":
-                    write_output_file(D, f'test_outputs/{path[7:-3]}.out')
+            # Write output file to sa_outputs/
+            if path[-3:] == ".in":
+                write_output_file(D, f'midnight_outs/{path[7:-3]}.out')
 
-def solve(G, s, n, starter=None, timeoutInSeconds=5):
+def solve(G, s, n, starter=None, timeoutInSeconds=120):
     largest_k = find_largest_k(G, s, n) # potentially use this?
     # assignment = {} # maps students to rooms
 
@@ -100,11 +100,16 @@ def solve(G, s, n, starter=None, timeoutInSeconds=5):
     # Set current state/assignment to the initial assignment
     i = 0 # counter of how many times to loop, essentially alloted cycle budget
              # TODO: Find an ideal value for i
+
+    streak_counter = 0
     starttime = time.time()
-    while i < CYCLE_BUDGET and time.time() < timeoutInSeconds + starttime:
+    best_assignment = starter.copy()
+    best_happiness = 0
+    while i < CYCLE_BUDGET and time.time() < timeoutInSeconds + starttime and \
+     streak_counter < SAME_STREAK:
         # Find the total happiness of the current assignment
         curr_happiness = calculate_happiness(curr_assignment, G)
-        #print(curr_happiness)
+        #print(streak_counter)
         new_assignment = {}
         # if we started recently, take a move thats likely to result in a new arrangement
         # otherwise, spread out search area, and do a different approach.
@@ -118,18 +123,25 @@ def solve(G, s, n, starter=None, timeoutInSeconds=5):
         delta_happiness = new_happiness - curr_happiness
 
         # If the new assignment is better, then replace the current assignment
-        if delta_happiness >= 0:
+        if delta_happiness > 0:
             curr_assignment = new_assignment;
+            if new_happiness > best_happiness:
+                best_happiness = new_happiness
+                best_assignment = curr_assignment
+            streak_counter = 0
         else:
             # If new assignment is worse, still replace it if we haven't looped
             #   very many times (e.g. i is high)
             # This is because we want to encourage randomizing if we just started
             #   looking at assignments, but discourage it later (but still possible)
             if use_worse(delta_happiness, i) > random.uniform(0,1):
-                print("SWITCHING ANYWAY LOL=======================")
+                #print("SWITCHING ANYWAY LOL=======================")
+                streak_counter = 0
                 curr_assignment = new_assignment
+            else:
+                streak_counter += 1
         i += 1
-    return curr_assignment, num_rooms(curr_assignment)
+    return best_assignment, num_rooms(best_assignment)
 
 def randomMove(G, s, D, maxRooms):
     start = time.time()
@@ -153,7 +165,7 @@ def randomMove(G, s, D, maxRooms):
     return student, move
 
 def use_worse(delta, t):
-    return 0.69 * math.exp(-0.03 * t)
+    return 0.69 * math.exp(-0.00054 * t)
 
 def progress_checker(prog, total):
     for j in range(10):

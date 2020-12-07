@@ -38,9 +38,9 @@ def compare_outputs(fname, raw_dirs, evaluation_file, dest_dir):
         return 0
 
 if __name__ == "__main__":
-    dirs = ["test_outputs", "final"]
+    dirs = ["test_4_outputs", "test_outputs", "final"]
     evaluation_file = "summary.txt"
-    dest_dir = "final/"
+    dest_dir = "compare_dest/"
     for fname in os.listdir(dirs[0]):
         if compare_outputs(fname[:-4], dirs, evaluation_file, dest_dir) == -1:
             print('nice file, idiot')
