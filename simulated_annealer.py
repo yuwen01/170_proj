@@ -109,7 +109,7 @@ def solve(G, s, n, starter=None, timeoutInSeconds=180):
      streak_counter < SAME_STREAK:
         # Find the total happiness of the current assignment
         curr_happiness = calculate_happiness(curr_assignment, G)
-        print(curr_happiness, i)
+        #print(curr_happiness, i)
         new_assignment = {}
         # if we started recently, take a move thats likely to result in a new arrangement
         # otherwise, spread out search area, and do a different approach.
@@ -165,7 +165,7 @@ def randomMove(G, s, D, maxRooms):
 
     if student is None:
         return None
-    print("random took", time.time() - start)
+    #print("random took", time.time() - start)
     return student, move
 
 def use_worse(delta, t):
@@ -176,7 +176,7 @@ def use_worse(delta, t):
     try:
         return math.exp(delta / (t * 1.8))
     except OverflowError:
-        print("oopsy")
+        #print("oopsy")
         return 0
 
 def progress_checker(prog, total):
