@@ -56,8 +56,29 @@ def greedy_solution(G, budget, neighborhood=-1, base=None):
         move = getBetterAssignment(G, budget, assignment, numStudents)
     return assignment, len(set(assignment.values()))
 
-
 def getBetterAssignment(G, s, D, maxRooms):
+    maxHappiness = calculate_happiness(D, G)
+    student = None
+    move = None
+
+    for curStudent in range(len(G.nodes)):
+        oldRoom = D[curStudent]
+        for newRoom in range(maxRooms):
+            D[curStudent] = newRoom
+            if is_valid_solution(D, G, s, len(set(D.values()))):
+                newHappiness = calculate_happiness(D, G)
+                if maxHappiness < newHappiness:
+                    maxHappiness = newHappiness
+                    student = curStudent
+                    move = newRoom
+
+        D[curStudent] = oldRoom
+
+    if student is None:
+        return None
+    return student, move
+
+def getBestAssignment(G, s, D, maxRooms):
     maxHappiness = calculate_happiness(D, G)
     student = None
     move = None
