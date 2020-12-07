@@ -110,7 +110,6 @@ def read_output_file(path, G, s):
 
     return D
 
-
 def write_output_file(D, path):
     """
     Writes a mapping to an output file
@@ -123,3 +122,36 @@ def write_output_file(D, path):
         for key, value in D.items():
             fo.write(str(key) + " " + str(value) + "\n")
         fo.close()
+
+def read_output_dict(path):
+    '''
+    Returns the student to room dictionary that
+    corresponds to an output file.
+    '''
+    assert path[-4:] == ".out"
+    result = {}
+    with open(path, "r") as fo:
+        lines = fo.read().splitlines()
+        for line in lines:
+            digs = [int(x) for x in line.split()]
+            result[digs[0]] = digs[1]
+    return result
+
+def flatten_dict(D):
+    '''
+    Returns a standardized version of this dictionary. 0 is in room 0, and
+    the next person in a unique room is in room 1, and so on.
+    '''
+    result = {0: 0}
+    next_available = 1
+    for i in range(1, len(D)):
+        found = False
+        for ind, val in result.items():
+            if D[ind] == D[i]:
+                result[i] = val
+                found = True
+                break
+        if not found:
+            result[i] = next_available
+            next_available += 1
+    return result

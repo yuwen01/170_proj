@@ -2,11 +2,12 @@ import networkx as nx
 from parse import read_input_file, write_output_file
 from utils import is_valid_solution, calculate_happiness, calculate_stress_for_room
 import time, copy
+import os
 
 def bruteForce(G, s):
     bruteForce(G, s, 0)
 
-def bruteForce(G, s, timeoutInSeconds):
+def bruteForce(G, s, timeoutInSeconds=600):
     """
     Brute force with backtracking on solution validity
     Args:
@@ -30,11 +31,11 @@ def bruteForce(G, s, timeoutInSeconds):
         nonlocal bestAssignment, bestNumRooms, bestScore
         # End early if timed out and return best solution
         if timeoutInSeconds and time.time() > start + timeoutInSeconds:
-            return
+            return -1
 
         # Ignore assignments with more than "numStudents" rooms.
         if numRooms >= numStudents:
-            return
+            return 0
 
         # If all students are assigned check if assignment is better
         if numAssigned >= numStudents:
@@ -43,7 +44,7 @@ def bruteForce(G, s, timeoutInSeconds):
                 bestAssignment = copy.deepcopy(curAssignment)
                 bestNumRooms = numRooms
                 bestScore = curScore
-            return
+            return 0
 
         # Go through all possible room assignments for the next student
         for room in range(numRooms + 1):
@@ -69,6 +70,38 @@ def bruteForce(G, s, timeoutInSeconds):
                 dfs(curAssignment, numAssigned + 1, newNumRooms)
 
         del curAssignment[numAssigned]
+    timeout = dfs(curAssignment, 0, 0)
+    return bestAssignment, bestNumRooms, timeout
 
-    dfs(curAssignment, 0, 0)
-    return bestAssignment, bestNumRooms
+if __name__ == "__main__":
+    timeout_fnames = os.listdir("timeout_outputs")
+    output_fnames = os.listdir("outputs")
+    for fname in os.listdir("inputs/"):
+        if "medium" in fname and f'{fname[:-3]}.out' not in timeout_fnames and \
+            f'{fname[:-3]}.out' not in output_fnames:
+            print("starting fname: ", fname)
+
+            path = os.path.join("inputs", fname)
+            G, s = read_input_file(path)
+
+            start = time.time()
+            D, k, t = bruteForce(G, s)
+            end = time.time()
+            print(f"Solution: {D}, {k}")
+            if D == None:
+                printf("couldnt find solution")
+                continue
+                
+            assert is_valid_solution(D, G, s, k)
+            print("Total Happiness: {}".format(calculate_happiness(D, G)))
+            print("Solving took {} seconds.".format(end - start))
+            if t == -1:
+                if path[-3:] == ".in":
+                    write_output_file(D, f'timeout_outputs/{path[7:-3]}.out')
+                else:
+                    write_output_file(D, f'test/test.out')
+            else:
+                if path[-3:] == ".in":
+                    write_output_file(D, f'outputs/{path[7:-3]}.out')
+                else:
+                    write_output_file(D, f'test/test.out')
