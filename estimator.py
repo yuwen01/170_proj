@@ -135,6 +135,7 @@ def simulated_annealing(G, budget, startAssignment=None):
     numStudents = len(G.nodes)
     assignment = startAssignment  # maps student to rooms
     if assignment is None:
+        assignment = {}
         for s in range(numStudents):
             assignment[s] = s
 
@@ -144,19 +145,19 @@ def simulated_annealing(G, budget, startAssignment=None):
         else:
             return math.exp(-delta / temperature)
 
-    #iteration = -1
-    temperature = 150
-    decay = 0.99939
-    cutoff = 1
+    iteration = -1
+    temperature = 50
+    decay = 0.99897
+    cutoff = 0.1
     curHappiness = 0
     move = getRandomMove(G, budget, assignment, numStudents)
     while move:
-        #iteration += 1
+        iteration += 1
         student, newRoom, newHappiness = move
         temperature *= 0 if temperature < cutoff else decay
 
-        # if iteration % 100 == 0:
-        #     print(newHappiness)
+        if iteration % 100 == 0:
+            print(newHappiness, iteration)
 
         if temperature > 0:
             # Do simulated annealing
@@ -237,15 +238,13 @@ if __name__ == "__main__":
     for fname in sorted(os.listdir(input_dir), reverse=False):
         isSolved = os.path.isfile(f"{solved_path}{fname[:-3]}.out")
         isComputed = os.path.isfile(f"{timeout_path}{fname[:-3]}.out")
-        if not isSolved and not isComputed:
+        if ".in" in fname and not isSolved and not isComputed:
             print("Starting fname: ", fname)
             path = os.path.join(input_dir, fname)
             G, s = read_input_file(path)
 
             start = time.time()
-            D, k = local_search(G, s)
-            print("Local Search Happiness: {}".format(calculate_happiness(D, G)))
-            D, k = simulated_annealing(G, s, D)
+            D, k = simulated_annealing(G, s)
             end = time.time()
 
             assert is_valid_solution(D, G, s, k)
