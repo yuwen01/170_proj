@@ -145,9 +145,9 @@ def simulated_annealing(G, budget, startAssignment=None):
             return math.exp(-delta / temperature)
 
     #iteration = -1
-    temperature = 50
-    decay = 0.99931
-    cutoff = 0.1
+    temperature = 150
+    decay = 0.99939
+    cutoff = 1
     curHappiness = 0
     move = getRandomMove(G, budget, assignment, numStudents)
     while move:
@@ -231,9 +231,9 @@ def getBetterAssignment(G, s, D, maxRooms, curHappiness):
 
 if __name__ == "__main__":
     input_dir = "hards_"
-    timeout_fname = "submission3"
+    timeout_fname = "submission5"
     timeout_path = f"{timeout_fname}/"
-    solved_path = "submission3/"
+    solved_path = "submission5/"
     for fname in sorted(os.listdir(input_dir), reverse=False):
         isSolved = os.path.isfile(f"{solved_path}{fname[:-3]}.out")
         isComputed = os.path.isfile(f"{timeout_path}{fname[:-3]}.out")
