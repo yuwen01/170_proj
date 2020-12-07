@@ -35,10 +35,10 @@ import time
 import random
 import math
 
-CYCLE_BUDGET = 3000
+CYCLE_BUDGET = 300000
 REPETITIONS = 15
-SAMPLE_SIZE = 4
-SAME_STREAK = 20
+SAMPLE_SIZE = 1
+SAME_STREAK = 32
 
 def main():
     '''
@@ -90,7 +90,7 @@ def main():
             if path[-3:] == ".in":
                 write_output_file(D, f'midnight_outs/{path[7:-3]}.out')
 
-def solve(G, s, n, starter=None, timeoutInSeconds=120):
+def solve(G, s, n, starter=None, timeoutInSeconds=180):
     largest_k = find_largest_k(G, s, n) # potentially use this?
     # assignment = {} # maps students to rooms
 
@@ -135,8 +135,8 @@ def solve(G, s, n, starter=None, timeoutInSeconds=120):
             # This is because we want to encourage randomizing if we just started
             #   looking at assignments, but discourage it later (but still possible)
             chance = use_worse(delta_happiness, i)
-            print("delta -----------------------", delta_happiness)
-            print("CHANCE ----------------------", chance)
+            # print("delta -----------------------", delta_happiness)
+            # print("CHANCE ----------------------", chance)
             if use_worse(delta_happiness, i) < random.uniform(0,1):
                 #print("SWITCHING ANYWAY LOL=======================")
                 streak_counter = 0
@@ -172,9 +172,9 @@ def use_worse(delta, t):
     if t == 0:
         return 0
     if delta == 0:
-        return math.exp(-50 / t)
+        return math.exp(-50 / (t * 1.8))
     try:
-        return math.exp(delta / t)
+        return math.exp(delta / (t * 1.8))
     except OverflowError:
         print("oopsy")
         return 0
