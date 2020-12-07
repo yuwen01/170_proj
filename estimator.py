@@ -64,7 +64,6 @@ def randomMove(G, s, D, maxRooms):
         for newRoom in random.sample(list(range(maxRooms)), maxRooms):
             D[curStudent] = newRoom
             if is_valid_solution(D, G, s, len(set(D.values()))):
-                newHappiness = calculate_happiness(D, G)
                 D[curStudent] = oldRoom
                 return curStudent, newRoom
 
