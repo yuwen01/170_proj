@@ -84,3 +84,28 @@ def calculate_happiness_for_room(arr, G):
     """
     H = G.subgraph(arr)
     return H.size("happiness")
+
+def flatten_dict(D):
+    '''
+    Returns a standardized version of this dictionary. 0 is in room 0, and
+    the next person in a unique room is in room 1, and so on.
+    '''
+    result = {0: 0}
+    next_available = 1
+    for i in range(1, len(D)):
+        found = False
+        for ind, val in result.items():
+            if D[ind] == D[i]:
+                result[i] = val
+                found = True
+                break
+        if not found:
+            result[i] = next_available
+            next_available += 1
+    return result
+
+def num_rooms(D):
+    '''
+    Returns the number of rooms in a student : rooms Dictionary
+    '''
+    return len(set(D.values()))
