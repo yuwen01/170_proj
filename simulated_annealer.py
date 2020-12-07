@@ -51,7 +51,7 @@ def main():
     alphanumeric = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
 
     # Iterate over files of chosen length in order
-    for filename in sorted(os.listdir("hards_/"), key=alphanumeric)[0:SAMPLE_SIZE]:
+    for filename in sorted(os.listdir("hards_/"), key=alphanumeric):
         print("annealing", filename)
         path = os.path.join("hards_/", filename)
         G, s = read_input_file(path)
