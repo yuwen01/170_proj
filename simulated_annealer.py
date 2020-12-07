@@ -49,10 +49,10 @@ def main():
     alphanumeric = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
 
     # Iterate over files of chosen length in order
-    for filename in sorted(os.listdir("medium_inputs/"), key=alphanumeric)[0:SAMPLE_SIZE]:
-        if 'medium' in filename:
+    for filename in sorted(os.listdir("inputs/"), key=alphanumeric)[0:SAMPLE_SIZE]:
+        if 'large' in filename:
             print("annealing", filename)
-            path = os.path.join("medium_inputs/", filename)
+            path = os.path.join("inputs/", filename)
             G, s = read_input_file(path)
 
             #starter = read_output_dict(os.path.join("flattened_greedy_outputs", filename[:-3] + ".out"))
@@ -96,16 +96,13 @@ def solve(G, s, n, starter=None, timeoutInSeconds=300):
     while i < CYCLE_BUDGET and time.time() < timeoutInSeconds + starttime:
         # Find the total happiness of the current assignment
         curr_happiness = calculate_happiness(curr_assignment, G)
-
+        print(curr_happiness)
         new_assignment = {}
         # if we started recently, take a move thats likely to result in a new arrangement
         # otherwise, spread out search area, and do a different approach.
-        if i < CYCLE_BUDGET * 0.2:
-            stud, room = randomMove(G, s, curr_assignment, num_rooms(curr_assignment))
-            new_assignment = curr_assignment.copy()
-            new_assignment[stud] = room
-        else:
-            new_assignment = random_neighbor(G, s, starter, neighborhood_size(i))
+        stud, room = randomMove(G, s, curr_assignment, num_rooms(curr_assignment))
+        new_assignment = curr_assignment.copy()
+        new_assignment[stud] = room
 
         # Find the total happiness of the new assignment
         new_happiness = calculate_happiness(new_assignment, G)
@@ -113,7 +110,6 @@ def solve(G, s, n, starter=None, timeoutInSeconds=300):
         delta_happiness = new_happiness - curr_happiness
 
         # If the new assignment is better, then replace the current assignment
-        curr_assignment = new_assignment
         if delta_happiness >= 0:
             curr_assignment = new_assignment;
         else:
@@ -122,6 +118,7 @@ def solve(G, s, n, starter=None, timeoutInSeconds=300):
             # This is because we want to encourage randomizing if we just started
             #   looking at assignments, but discourage it later (but still possible)
             if use_worse(delta_happiness, i) > random.uniform(0,1):
+                print("SWITCHING ANYWAY LOL=======================")
                 curr_assignment = new_assignment
         i += 1
     return curr_assignment, num_rooms(curr_assignment)
@@ -148,7 +145,7 @@ def randomMove(G, s, D, maxRooms):
     return student, move
 
 def use_worse(delta, t):
-    return 0.69 * math.exp(-0.003 * t)
+    return 0.69 * math.exp(-0.03 * t)
 
 def progress_checker(prog, total):
     for j in range(10):
