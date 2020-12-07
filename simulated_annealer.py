@@ -145,15 +145,6 @@ def randomMove(G, s, D, maxRooms):
     print("random took", time.time() - start, "seconds")
     return curStudent, newRoom
 
-# Pick a random neighbor of starter
-def neighborhood_size(t):
-    #return int(20 * math.exp(-0.004 * t) + 1)
-    return 3
-
-def merge_prob(t):
-    #return 0.8 * math.exp(-0.003 * t)
-    return 0.1
-
 def use_worse(delta, t):
     return 0.69 * math.exp(-0.003 * t) + 0.01
 
