@@ -1,0 +1,6 @@
+medium-16
+
+dir: final happiness: 318.106
+dir: test_4_outputs happiness: 237.731
+============================
+

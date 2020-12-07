@@ -109,7 +109,7 @@ def solve(G, s, n, starter=None, timeoutInSeconds=120):
      streak_counter < SAME_STREAK:
         # Find the total happiness of the current assignment
         curr_happiness = calculate_happiness(curr_assignment, G)
-        #print(curr_happiness, i)
+        print(curr_happiness, i)
         new_assignment = {}
         # if we started recently, take a move thats likely to result in a new arrangement
         # otherwise, spread out search area, and do a different approach.
@@ -134,7 +134,10 @@ def solve(G, s, n, starter=None, timeoutInSeconds=120):
             #   very many times (e.g. i is high)
             # This is because we want to encourage randomizing if we just started
             #   looking at assignments, but discourage it later (but still possible)
-            if use_worse(delta_happiness, i) > random.uniform(0,1):
+            chance = use_worse(delta_happiness, i)
+            print("delta -----------------------", delta_happiness)
+            print("CHANCE ----------------------", chance)
+            if use_worse(delta_happiness, i) < random.uniform(0,1):
                 #print("SWITCHING ANYWAY LOL=======================")
                 streak_counter = 0
                 curr_assignment = new_assignment
@@ -166,11 +169,12 @@ def randomMove(G, s, D, maxRooms):
     return student, move
 
 def use_worse(delta, t):
+    if t == 0:
+        return 0
     if delta == 0:
-        return 0.5
-
+        return math.exp(-50 / t)
     try:
-        return  0.69 * math.exp(-0.01 * t / delta)
+        return math.exp(delta / t)
     except OverflowError:
         print("oopsy")
         return 0
@@ -179,28 +183,6 @@ def progress_checker(prog, total):
     for j in range(10):
         if prog == j * total // 10:
             print(f'{j*10}%')
-
-def random_neighbor(G, s, starter, neighborhood, merge_threshold=0):
-    '''
-    A neighbor of an assignment is either a swap of two students, or
-    moving one student into another's room
-    I figure that merging a student into another's room isn't gonna meet stress
-    requirements very often, so I only do that with 20% chance
-    '''
-    valid = False
-    cur = starter.copy()
-    while True:
-        cur = starter.copy()
-        #print(cur)
-        movers = random.sample(list(cur.keys()), neighborhood)
-        rooms = random.choice(list(cur.values()), neighborhood)
-        for i in range(neighborhood):
-            cur[movers[i]] = rooms[i]
-        if cur == starter:
-            continue;
-        if is_valid_solution(cur, G, s, len(set(cur.values()))):
-            break
-    return cur
 
 def find_largest_k(G, s, n):
     '''
