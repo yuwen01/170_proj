@@ -68,15 +68,13 @@ def bruteForce(G, s, timeoutInSeconds=120):
 
 
 if __name__ == "__main__":
-    timeout_fname = "2min_timeout_outputs"
-    # source_fnames = os.listdir("1sec_timeout_outputs")
-    timeout_fnames = os.listdir(timeout_fname)
-    solved_fnames = os.listdir("solved")
-    print(timeout_fnames)
-    print(solved_fnames)
+    timeout_fname = "5min_timeout_outputs"
+    timeout_path = f"{timeout_fname}/"
+    solved_path = "solved/"
     for fname in sorted(os.listdir("inputs/"), reverse=True):
-        if "medium" in fname and f'{fname[:-3]}.out' not in timeout_fnames \
-                and f'{fname[:-3]}.out' not in solved_fnames:
+        isSolved = os.path.isfile(f"{solved_path}{fname[:-3]}.out")
+        isComputed = os.path.isfile(f"{timeout_path}{fname[:-3]}.out")
+        if "medium" in fname and not isSolved and not isComputed:
             print("starting fname: ", fname)
             path = os.path.join("inputs", fname)
             G, s = read_input_file(path)
