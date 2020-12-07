@@ -44,7 +44,7 @@ def greedy_solution(G, budget):
     while move:
         student, newRoom = move
         assignment[student] = newRoom
-        if (random.random() > schedule(counter)):
+        if counter > 400:
             move = getBetterAssignment(G, budget, assignment, numStudents)
         else:
             move = randomMove(G, budget, assignment, numStudents)
