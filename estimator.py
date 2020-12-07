@@ -2,7 +2,7 @@ import networkx as nx
 from parse import read_input_file, write_output_file
 from utils import is_valid_solution, calculate_happiness, calculate_stress_for_room, calculate_happiness_for_room, \
     convert_dictionary
-import os, time, random
+import os, time, random, math
 
 ''' simulated annealing bay bee
 G: the graph of the students and their breakout rooms
@@ -19,7 +19,7 @@ also i am clearly not going to have time to finish this tonight i am so tired
 
 
 def estimate(G, s, neighborhood=2, samples_per=15, kept_per=4, loops=100, seed=69):
-    return local_search(G, s)
+    return simulated_annealing(G, s)
 
 
 ''' the point of this is to get a starting point. Ideally, search radius will decrease over time,
@@ -122,6 +122,85 @@ def local_search(G, budget):
     return assignment, len(set(assignment.values()))
 
 
+def simulated_annealing(G, budget):
+    """
+    Simulated Annealing. Similar to hill climbing but it only needs to find a better neighbor instead
+    of the best neighbor
+    Args:
+        G:
+        budget:
+    Returns:
+
+    """
+    numStudents = len(G.nodes)
+    assignment = {}  # maps student to rooms
+    for s in range(numStudents):
+        assignment[s] = s
+
+    def accept_probability(delta, temperature):
+        if temperature == 0:
+            return 0
+        else:
+            return math.exp(-delta / temperature)
+
+    iteration = -1
+    temperature = 100
+    decay = 0.99
+    curHappiness = 0
+    move = getRandomMove(G, budget, assignment, numStudents)
+    while move:
+        iteration += 1
+        student, newRoom, newHappiness = move
+        temperature *= 0 if temperature < 1e-10 else decay
+
+        if iteration % 100 == 0:
+            print(newHappiness)
+
+        if temperature > 0:
+            # Do simulated annealing
+
+            # delta = -s' - (-s) = s - s' where s is the happiness of the state and
+            # the cost function is the negation of the happiness
+            delta = curHappiness - newHappiness
+            if delta < 0:
+                assignment[student] = newRoom
+                curHappiness = newHappiness
+            elif random.uniform(0, 1) < accept_probability(delta, temperature):
+                assignment[student] = newRoom
+                curHappiness = newHappiness
+            move = getRandomMove(G, budget, assignment, numStudents)
+        else:
+            # Do local search
+            assignment[student] = newRoom
+            move = getBetterAssignment(G, budget, assignment, numStudents, newHappiness)
+
+    return assignment, len(set(assignment.values()))
+
+
+def getRandomMove(G, s, D, maxRooms):
+    student = None
+    move = None
+    students = list(range(len(G.nodes)))
+    rooms = list(range(maxRooms))
+    random.shuffle(students)
+
+    for curStudent in students:
+        oldRoom = D[curStudent]
+        random.shuffle(rooms)
+        for newRoom in rooms:
+            D[curStudent] = newRoom
+            if is_valid_solution(D, G, s, len(set(D.values()))):
+                newHappiness = calculate_happiness(D, G)
+                D[curStudent] = oldRoom
+                return curStudent, newRoom, newHappiness
+
+        D[curStudent] = oldRoom
+
+    if student is None:
+        return None
+    return student, move
+
+
 def getBetterAssignment(G, s, D, maxRooms, curHappiness):
     student = None
     move = None
@@ -137,7 +216,7 @@ def getBetterAssignment(G, s, D, maxRooms, curHappiness):
             if is_valid_solution(D, G, s, len(set(D.values()))):
                 newHappiness = calculate_happiness(D, G)
                 if curHappiness < newHappiness:
-                    print(newHappiness)
+                    print(curHappiness, newHappiness)
                     D[curStudent] = oldRoom
                     return curStudent, newRoom, newHappiness
 
@@ -156,7 +235,7 @@ if __name__ == "__main__":
     for fname in os.listdir(input_dir):
         isSolved = os.path.isfile(f"{solved_path}{fname[:-3]}.out")
         isComputed = os.path.isfile(f"{timeout_path}{fname[:-3]}.out")
-        if "medium" in fname and not isSolved and not isComputed:
+        if "large" in fname and not isSolved and not isComputed:
             print("Starting fname: ", fname)
             path = os.path.join(input_dir, fname)
             G, s = read_input_file(path)
