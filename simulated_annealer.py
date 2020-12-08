@@ -40,6 +40,7 @@ REPETITIONS = 25
 SAMPLE_SIZE = 1
 SAME_STREAK = 100
 
+
 def main():
     '''
     Anneal, based on parameters in main. Write to different folders depending on specific parameters
@@ -48,7 +49,7 @@ def main():
 
     # Set alphanumeric key for sorting
     convert = lambda text: int(text) if text.isdigit() else text
-    alphanumeric = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
+    alphanumeric = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
 
     # Iterate over files of chosen length in order
     for filename in sorted(os.listdir("shits_/"), key=alphanumeric):
@@ -56,7 +57,7 @@ def main():
         path = os.path.join("shits_/", filename)
         G, s = read_input_file(path)
 
-        #starter = read_output_dict(os.path.join("flattened_greedy_outputs", filename[:-3] + ".out"))
+        # starter = read_output_dict(os.path.join("flattened_greedy_outputs", filename[:-3] + ".out"))
         # Find number of students, probably a better way exists
         with open(path, "r") as fo:
             n = fo.readline().strip()
@@ -98,18 +99,19 @@ def solve(G, s, n, starter=None, timeoutInSeconds=120):
     curr_assignment = starter.copy()
 
     # Set current state/assignment to the initial assignment
-    i = 0 # counter of how many times to loop, essentially alloted cycle budget
-             # TODO: Find an ideal value for i
+    i = 0  # counter of how many times to loop, essentially alloted cycle budget
+    # TODO: Find an ideal value for i
 
     streak_counter = 0
     starttime = time.time()
     best_assignment = starter.copy()
     best_happiness = 0
     while i < CYCLE_BUDGET and time.time() < timeoutInSeconds + starttime and \
-     streak_counter < SAME_STREAK:
+            streak_counter < SAME_STREAK:
         # Find the total happiness of the current assignment
         curr_happiness = calculate_happiness(curr_assignment, G)
-        #print(curr_happiness, i)
+        if i % 100 == 0:
+            print(curr_happiness, i)
         new_assignment = {}
         # if we started recently, take a move thats likely to result in a new arrangement
         # otherwise, spread out search area, and do a different approach.
@@ -120,11 +122,13 @@ def solve(G, s, n, starter=None, timeoutInSeconds=120):
         # Find the total happiness of the new assignment
         new_happiness = calculate_happiness(new_assignment, G)
 
-        delta_happiness = new_happiness - curr_happiness
+        # Define the cost of an assignment to be the negation of the happiness given by
+        # that assignment. delta = -s' - (-s) = s - s' where s is the happiness of the state
+        delta_happiness = curr_happiness - new_happiness
 
         # If the new assignment is better, then replace the current assignment
-        if delta_happiness > 0:
-            curr_assignment = new_assignment;
+        if delta_happiness < 0:
+            curr_assignment = new_assignment
             if new_happiness > best_happiness:
                 best_happiness = new_happiness
                 best_assignment = curr_assignment.copy()
@@ -134,11 +138,13 @@ def solve(G, s, n, starter=None, timeoutInSeconds=120):
             #   very many times (e.g. i is high)
             # This is because we want to encourage randomizing if we just started
             #   looking at assignments, but discourage it later (but still possible)
-            chance = use_worse(delta_happiness, i)
+
+            # Define t = CYCLE_BUDGET - i
+            accept_probability = use_worse(delta_happiness, max(5000 - i, 0))
             # print("delta -----------------------", delta_happiness)
             # print("CHANCE ----------------------", chance)
-            if use_worse(delta_happiness, i) < random.uniform(0,1):
-                #print("SWITCHING ANYWAY LOL=======================")
+            if accept_probability > random.uniform(0, 1):
+                # print("SWITCHING ANYWAY LOL=======================")
                 streak_counter = 0
                 curr_assignment = new_assignment
             else:
@@ -147,12 +153,13 @@ def solve(G, s, n, starter=None, timeoutInSeconds=120):
     print('finished one')
     return best_assignment, num_rooms(best_assignment)
 
+
 def randomMove(G, s, D, maxRooms):
     start = time.time()
     maxHappiness = calculate_happiness(D, G)
     student = None
     move = None
-    #print(range(len(G.nodes)))
+    # print(range(len(G.nodes)))
     for curStudent in random.sample(list(range(len(G.nodes))), len(list(range(len(G.nodes))))):
         oldRoom = D[curStudent]
         for newRoom in random.sample(list(range(maxRooms)), maxRooms):
@@ -165,8 +172,9 @@ def randomMove(G, s, D, maxRooms):
 
     if student is None:
         return None
-    #print("random took", time.time() - start)
+    # print("random took", time.time() - start)
     return student, move
+
 
 def use_worse(delta, t):
     if t == 0:
@@ -174,13 +182,15 @@ def use_worse(delta, t):
     try:
         return math.exp(delta / (t))
     except OverflowError:
-        #print("oopsy")
+        # print("oopsy")
         return 0
+
 
 def progress_checker(prog, total):
     for j in range(10):
         if prog == j * total // 10:
-            print(f'{j*10}%')
+            print(f'{j * 10}%')
+
 
 def find_largest_k(G, s, n):
     '''
@@ -188,13 +198,13 @@ def find_largest_k(G, s, n):
     that S_ij <= S_max / k.
     The maximum room size is k = n where each student is in their own room.
     '''
-    num_students = n # probably a better way to find n
+    num_students = n  # probably a better way to find n
     largest_stress = max(dict(G.edges).items(), key=lambda x: x[1]['stress'])[1]['stress']
     largest_k = num_students
 
     # Counts down from num_students to 1
     for k in range(num_students, 0, -1):
-        if largest_stress < s/k:
+        if largest_stress < s / k:
             largest_k = k
             break
 
@@ -204,6 +214,7 @@ def find_largest_k(G, s, n):
     # print("The largest possible k is: " + str(largest_k))
 
     return largest_k
+
 
 if __name__ == '__main__':
     # Uncomment line below to run on all input files and comment out the debug section
