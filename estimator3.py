@@ -145,19 +145,19 @@ def simulated_annealing(G, budget, startAssignment=None):
         else:
             return math.exp(-delta / temperature)
 
-    iteration = -1
+    # iteration = -1
     temperature = 50
     decay = 0.9949
     cutoff = 0.3
     curHappiness = 0
     neighbor, isSwap = getRandomNeighbor(G, budget, assignment, numStudents)
     while neighbor:
-        iteration += 1
+        # iteration += 1
         student, move, newHappiness = neighbor
         temperature *= 0 if temperature < cutoff else decay
-
-        if iteration % 500 == 0:
-            print(newHappiness, iteration)
+        #
+        # if iteration % 500 == 0:
+        #     print(newHappiness, iteration)
 
         if temperature > 0:
             # Do simulated annealing
@@ -322,15 +322,15 @@ def getBetterSwapAssignment(G, s, D, curHappiness):
 
 
 if __name__ == "__main__":
-    repeat = 10
-    input_dir = "shits_"
-    timeout_fname = "submission7"
+    repeat = 5
+    input_dir = "inputs2"
+    timeout_fname = "submission8"
     timeout_path = f"{timeout_fname}/"
     solved_path = f"{timeout_fname}/"
     for fname in sorted(os.listdir(input_dir), reverse=True):
         isSolved = os.path.isfile(f"{solved_path}{fname[:-3]}.out")
         isComputed = os.path.isfile(f"{timeout_path}{fname[:-3]}.out")
-        if "medium" in fname and not isSolved and not isComputed:
+        if ".in" in fname and not isSolved and not isComputed:
             print("Starting fname: ", fname)
             path = os.path.join(input_dir, fname)
             G, s = read_input_file(path)
@@ -340,7 +340,7 @@ if __name__ == "__main__":
             bestD = None
             bestk = None
             for i in range(repeat):
-                D, k, curHappiness = local_search(G, s)
+                D, k, curHappiness = simulated_annealing(G, s)
                 if bestHappiness < curHappiness:
                     bestD = D.copy()
                     bestk = k
