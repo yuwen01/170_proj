@@ -1,5 +1,5 @@
 import networkx as nx
-from parse import read_input_file, write_output_file
+from parse import read_input_file, write_output_file, read_output_dict
 from utils import is_valid_solution, calculate_happiness, calculate_stress_for_room
 from findSolution import bruteForce
 import os, time, random, math
@@ -322,23 +322,30 @@ def getBetterSwapAssignment(G, s, D, curHappiness):
 
 
 if __name__ == "__main__":
-    repeat = 5
-    bruteForceTimeoutInSeconds = 100
-    input_dir = "billy2"
-    timeout_fname = "submission9"
+    repeat = 1
+    bruteForceTimeoutInSeconds = 20
+    input_dir = "inputs2"
+    timeout_fname = "submission10"
     timeout_path = f"{timeout_fname}/"
+    cache_path = os.path.join("submission10", "cache")
     solved_path = f"{timeout_fname}/"
     for fname in sorted(os.listdir(input_dir), reverse=False):
         isSolved = os.path.isfile(f"{solved_path}{fname[:-3]}.out")
+        hasCache = os.path.isfile(os.path.join(cache_path, f"{fname[:-3]}.out"))
         isComputed = os.path.isfile(f"{timeout_path}{fname[:-3]}.out")
-        if "medium" in fname and not isSolved and not isComputed:
+        print(fname, hasCache)
+        if ".in" in fname and not isSolved and not isComputed and hasCache:
             print("Starting fname: ", fname)
             path = os.path.join(input_dir, fname)
             G, s = read_input_file(path)
 
             start = time.time()
             # Find Starting Assignment
-            startAssignment, startRooms, timeout, last = bruteForce(G, s, bruteForceTimeoutInSeconds, None, None)
+            startAssignment = None
+            if hasCache:
+                startAssignment = read_output_dict(os.path.join(cache_path, f"{fname[:-3]}.out"))
+            else:
+                startAssignment, startRooms, timeout, last = bruteForce(G, s, bruteForceTimeoutInSeconds, None, None)
             cache_output = os.path.join(timeout_path, "cache")
             if startAssignment is None:
                 startAssignment = {}
@@ -348,6 +355,7 @@ if __name__ == "__main__":
                     write_output_file(last, os.path.join(cache_output, f"{fname[:-3]}-last.out"))
                 else:
                     write_output_file(bestD, f'test/test.out')
+                continue
             else:
                 if path[-3:] == ".in":
                     write_output_file(startAssignment, os.path.join(cache_output, f"{fname[:-3]}.out"))
