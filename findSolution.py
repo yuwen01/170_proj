@@ -11,7 +11,7 @@ def bruteForce(G, s):
 
 def bruteForce(G, s, timeoutInSeconds=300, cachedSolution=None, cachedAssignment=None):
     """
-    Brute force with backtracking on solution validity
+    Brute force with backtracking on solution validity. Return first valid solution.
     Args:
         G: Graph representation of the problem
         s: Max Stress
@@ -20,7 +20,7 @@ def bruteForce(G, s, timeoutInSeconds=300, cachedSolution=None, cachedAssignment
         cachedSolution: A dictionary of the cached best solution found so far.
         cachedAssignment: A dictionary of a cached assignment to start from.
 
-    Returns: Best solution sound so far
+    Returns: First valid solution found
 
     """
     numStudents = len(G.nodes)

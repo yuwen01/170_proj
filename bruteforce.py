@@ -57,6 +57,7 @@ def bruteForce(G, s, timeoutInSeconds=300, cachedSolution=None, cachedAssignment
                 bestAssignment = copy.deepcopy(curAssignment)
                 bestNumRooms = numRooms
                 bestScore = curScore
+                print("Best Score: ", bestScore)
             return
 
         # End early if timed out and return best solution
@@ -87,16 +88,16 @@ def bruteForce(G, s, timeoutInSeconds=300, cachedSolution=None, cachedAssignment
 
 
 if __name__ == "__main__":
-    timeout_in_seconds = 0.5
-    input_dir = "test_inputs"
-    timeout_fname = "test_outputs"
-    cache_path = "2min_timeout_outputs"
+    timeout_in_seconds = 600
+    input_dir = "shits_"
+    timeout_fname = "10min_timeout_outputs"
+    cache_path = "5min_timeout_outputs2"
     timeout_path = f"{timeout_fname}/"
     solved_path = "solved/"
-    for fname in sorted(os.listdir(input_dir), reverse=True):
+    for fname in sorted(os.listdir(input_dir), reverse=False):
         isSolved = os.path.isfile(f"{solved_path}{fname[:-3]}.out")
         isComputed = os.path.isfile(f"{timeout_path}{fname[:-3]}.out")
-        if "medium" in fname and not isSolved and not isComputed:
+        if "medium-16.in" in fname and not isSolved and not isComputed:
             print("starting fname: ", fname)
             path = os.path.join(input_dir, fname)
             G, s = read_input_file(path)
