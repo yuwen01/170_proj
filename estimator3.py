@@ -323,11 +323,11 @@ def getBetterSwapAssignment(G, s, D, curHappiness):
 
 if __name__ == "__main__":
     repeat = 5
-    input_dir = "inputs2"
-    timeout_fname = "submission8"
+    input_dir = "billy2"
+    timeout_fname = "submission9"
     timeout_path = f"{timeout_fname}/"
     solved_path = f"{timeout_fname}/"
-    for fname in sorted(os.listdir(input_dir), reverse=True):
+    for fname in sorted(os.listdir(input_dir), reverse=False):
         isSolved = os.path.isfile(f"{solved_path}{fname[:-3]}.out")
         isComputed = os.path.isfile(f"{timeout_path}{fname[:-3]}.out")
         if ".in" in fname and not isSolved and not isComputed:

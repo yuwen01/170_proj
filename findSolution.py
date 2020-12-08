@@ -25,25 +25,19 @@ def bruteForce(G, s, timeoutInSeconds=300, cachedSolution=None, cachedAssignment
     """
     numStudents = len(G.nodes)
 
-    bestAssignment = cachedSolution
-    bestNumRooms = -1
-    if bestAssignment is not None:
-        uniqueRooms = set()
-        for value in bestAssignment.values():
-            uniqueRooms.add(value)
-        bestNumRooms = len(uniqueRooms)
-
+    validAssignment = None
+    validNumRooms = -1
     lastAssignment = None
-    bestScore = -1 if bestAssignment is None \
-        else calculate_happiness(bestAssignment, G)
+    bestScore = -1 if validAssignment is None \
+        else calculate_happiness(validAssignment, G)
     start = time.time()
     curAssignment = {}
     timeout = 0
 
     def dfs(curAssignment, numAssigned, numRooms):
-        nonlocal bestAssignment, bestNumRooms, bestScore, timeout, lastAssignment, cachedAssignment
-        # Ignore assignments with more than "numStudents" rooms.
-        if numRooms >= numStudents:
+        nonlocal validAssignment, validNumRooms, bestScore, timeout, lastAssignment, cachedAssignment
+        # Ignore assignments with more than "numStudents" rooms and stop when we found a valid assignment.
+        if numRooms >= numStudents or validAssignment:
             return
 
         # Clear cachedAssignment once we finish in to cached assignment.
@@ -54,10 +48,9 @@ def bruteForce(G, s, timeoutInSeconds=300, cachedSolution=None, cachedAssignment
         if numAssigned >= numStudents:
             curScore = calculate_happiness(curAssignment, G)
             if curScore > bestScore:
-                bestAssignment = copy.deepcopy(curAssignment)
-                bestNumRooms = numRooms
+                validAssignment = copy.deepcopy(curAssignment)
+                validNumRooms = numRooms
                 bestScore = curScore
-                print("Best Score: ", bestScore)
             return
 
         # End early if timed out and return best solution
@@ -84,7 +77,15 @@ def bruteForce(G, s, timeoutInSeconds=300, cachedSolution=None, cachedAssignment
         del curAssignment[numAssigned]
 
     dfs(curAssignment, 0, 0)
-    return bestAssignment, bestNumRooms, timeout, lastAssignment
+    # Use cached solution if none found
+    if validAssignment is None and cachedSolution is not None:
+        validAssignment = cachedSolution
+        uniqueRooms = set()
+        for value in validAssignment.values():
+            uniqueRooms.add(value)
+        validNumRooms = len(uniqueRooms)
+
+    return validAssignment, validNumRooms, timeout, lastAssignment
 
 
 if __name__ == "__main__":
