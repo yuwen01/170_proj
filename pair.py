@@ -38,12 +38,16 @@ def greedy_solution(G, budget):
         assignment[s] = s
 
     counter = 0
-    timeout = 480
+    timeout = 180
     move = getBetterAssignment(G, budget, assignment, numStudents)
     start = time.time()
-    good = 1
-    while good and time.time() < start + timeout:
-        good = getBetterAssignment(G, budget, assignment, numStudents)
+    while move:
+        student, newRoom = move
+        assignment[student] = newRoom
+        if counter > 400:
+            move = getBetterAssignment(G, budget, assignment, numStudents)
+        else:
+            move = randomMove(G, budget, assignment, numStudents)
         counter += 1
     return assignment, len(set(assignment.values()))
 
@@ -55,12 +59,10 @@ def randomMove(G, s, D, maxRooms):
     maxHappiness = calculate_happiness(D, G)
     student = None
     move = None
-    random_students = random.sample(list(range(len(G.nodes))), len(list(range(len(G.nodes)))))
-    random_rooms = random.sample(list(range(maxRooms)), maxRooms)
     #print(range(len(G.nodes)))
-    for curStudent in random_students:
+    for curStudent in random.sample(list(range(len(G.nodes))), len(list(range(len(G.nodes))))):
         oldRoom = D[curStudent]
-        for newRoom in random_rooms:
+        for newRoom in random.sample(list(range(maxRooms)), maxRooms):
             D[curStudent] = newRoom
             if is_valid_solution(D, G, s, len(set(D.values()))):
                 D[curStudent] = oldRoom
@@ -78,7 +80,6 @@ def getBetterAssignment(G, s, D, maxRooms):
     maxHappiness = calculate_happiness(D, G)
     student = None
     move = None
-    backup = D.copy()
     for curStudent in list(range(len(G.nodes))):
         oldRoom = D[curStudent]
         for newRoom in list(range(maxRooms)):
@@ -92,38 +93,15 @@ def getBetterAssignment(G, s, D, maxRooms):
 
         D[curStudent] = oldRoom
 
-    single_swap_max_hap = maxHappiness
-    assert D == backup
-    best_pair = (-1, -1)
-
-    for stud1 in range(len(G.nodes)):
-        for stud2 in range(stud1 + 1, len(G.nodes)):
-            if D[stud1] == D[stud2]:
-                continue
-            D[stud1], D[stud2] = D[stud2], D[stud1]
-            if is_valid_solution(D, G, s, len(set(D.values()))):
-                newHappiness = calculate_happiness(D, G)
-                if newHappiness < maxHappiness:
-                    maxHappiness = newHappiness
-                    best_pair = (stud1, stud2)
-            D[stud1], D[stud2] = D[stud2], D[stud1]
-
-    if student == None and best_pair == (-1, -1):
-        return 0
-    assert D == backup
-    if maxHappiness > single_swap_max_hap:
-        stud1, stud2 = best_pair[0], best_pair[1]
-        D[stud1], D[stud2] = D[stud2], D[stud1]
-    else:
-        D[student] = move
-
-    return 1
+    if student is None:
+        return None
+    return student, move
 
 if __name__ == "__main__":
-    for fname in sorted(os.listdir("shits_/")):
-        if fname[:-3] + ".out" not in os.listdir("twowide"):
+    for fname in sorted(os.listdir("hards1/")):
+        if fname[:-3] + ".out" not in os.listdir("midnight_outs"):
             print('pseudo greedying', fname)
-            path = os.path.join("shits_", fname)
+            path = os.path.join("inputs", fname)
             G, s = read_input_file(path)
 
             start = time.time()
@@ -134,6 +112,6 @@ if __name__ == "__main__":
             print("Total Happiness: {}".format(calculate_happiness(D, G)))
             print("Solving took {} seconds.".format(end - start))
             if path[-3:] == ".in":
-                write_output_file(D, f'twowide/{path[7:-3]}.out')
+                write_output_file(D, f'midnight_outs/{path[7:-3]}.out')
             else:
                 write_output_file(D, f'test/test.out')
