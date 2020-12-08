@@ -233,9 +233,9 @@ def getBetterAssignment(G, s, D, maxRooms, curHappiness):
 if __name__ == "__main__":
     repeat = 5
     input_dir = "shits_"
-    timeout_fname = "submission5"
+    timeout_fname = "custom"
     timeout_path = f"{timeout_fname}/"
-    solved_path = "submission5/"
+    solved_path = f"{timeout_fname}/"
     for fname in sorted(os.listdir(input_dir), reverse=True):
         isSolved = os.path.isfile(f"{solved_path}{fname[:-3]}.out")
         isComputed = os.path.isfile(f"{timeout_path}{fname[:-3]}.out")
