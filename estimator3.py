@@ -114,11 +114,11 @@ def local_search(G, budget):
     for s in range(numStudents):
         assignment[s] = s
 
-    move = getBetterAssignment(G, budget, assignment, numStudents, 0)
-    while move:
-        student, newRoom, curHappiness = move
-        assignment[student] = newRoom
-        move = getBetterAssignment(G, budget, assignment, numStudents, curHappiness)
+    neighbor, isSwap = getBetterNeighbor(G, budget, assignment, numStudents, 0)
+    while neighbor:
+        student, move, curHappiness = neighbor
+        transition(assignment, student, move, isSwap)
+        neighbor, isSwap = getBetterNeighbor(G, budget, assignment, numStudents, curHappiness)
     return assignment, len(set(assignment.values())), calculate_happiness(assignment, G)
 
 
@@ -145,19 +145,19 @@ def simulated_annealing(G, budget, startAssignment=None):
         else:
             return math.exp(-delta / temperature)
 
-    # iteration = -1
+    iteration = -1
     temperature = 50
     decay = 0.9949
     cutoff = 0.3
     curHappiness = 0
-    move = getRandomMove(G, budget, assignment, numStudents)
-    while move:
-        # iteration += 1
-        student, newRoom, newHappiness = move
+    neighbor, isSwap = getRandomNeighbor(G, budget, assignment, numStudents)
+    while neighbor:
+        iteration += 1
+        student, move, newHappiness = neighbor
         temperature *= 0 if temperature < cutoff else decay
 
-        # if iteration % 500 == 0:
-        #     print(newHappiness, iteration)
+        if iteration % 500 == 0:
+            print(newHappiness, iteration)
 
         if temperature > 0:
             # Do simulated annealing
@@ -166,23 +166,79 @@ def simulated_annealing(G, budget, startAssignment=None):
             # the cost function is the negation of the happiness
             delta = curHappiness - newHappiness
             if delta < 0:
-                assignment[student] = newRoom
+                transition(assignment, student, move, isSwap)
                 curHappiness = newHappiness
             elif random.uniform(0, 1) < accept_probability(delta, temperature):
-                assignment[student] = newRoom
+                transition(assignment, student, move, isSwap)
                 curHappiness = newHappiness
-            move = getRandomMove(G, budget, assignment, numStudents)
+            neighbor, isSwap = getRandomNeighbor(G, budget, assignment, numStudents)
         else:
             # Do local search
-            assignment[student] = newRoom
-            move = getBetterAssignment(G, budget, assignment, numStudents, newHappiness)
+            transition(assignment, student, move, isSwap)
+            neighbor, isSwap = getBetterNeighbor(G, budget, assignment, numStudents, newHappiness)
 
     return assignment, len(set(assignment.values())), calculate_happiness(assignment, G)
 
 
-def getRandomMove(G, s, D, maxRooms):
-    student = None
-    move = None
+def transition(D, student, move, isSwap):
+    if isSwap:
+        D[student], D[move] = D[move], D[student]
+    else:
+        D[student] = move
+
+
+def getRandomNeighbor(G, s, D, maxRooms):
+    """
+
+    Args:
+        G:
+        s:
+        D:
+        maxRooms:
+
+    Returns:
+    move, isSwap
+    """
+    swapFirst = random.uniform(0, 1) < 0.5
+    if swapFirst:
+        move = getRandomSwap(G, s, D)
+        if move is None:
+            return getRandomStudentMove(G, s, D, maxRooms), 0
+        return move, 1
+    else:
+        move = getRandomStudentMove(G, s, D, maxRooms)
+        if move is None:
+            return getRandomSwap(G, s, D), 1
+        return move, 0
+
+
+def getBetterNeighbor(G, s, D, maxRooms, curHappiness):
+    """
+    
+    Args:
+        G: 
+        s: 
+        D: 
+        maxRooms: 
+        curHappiness: 
+
+    Returns:
+    move, isSwap
+    """
+    swapFirst = random.uniform(0, 1) < 0.5
+    if swapFirst:
+        move = getBetterSwapAssignment(G, s, D, curHappiness)
+        if move is None:
+            return getBetterStudentAssignment(G, s, D, maxRooms, curHappiness), 0
+        return move, 1
+    else:
+        move = getBetterStudentAssignment(G, s, D, maxRooms, curHappiness)
+        if move is None:
+            return getBetterSwapAssignment(G, s, D, curHappiness), 1
+        return move, 0
+
+
+def getRandomStudentMove(G, s, D, maxRooms):
     students = list(range(len(G.nodes)))
     rooms = list(range(maxRooms))
     random.shuffle(students)
@@ -199,14 +255,30 @@ def getRandomMove(G, s, D, maxRooms):
 
         D[curStudent] = oldRoom
 
-    if student is None:
-        return None
-    return student, move
+    return None
 
 
-def getBetterAssignment(G, s, D, maxRooms, curHappiness):
-    student = None
-    move = None
+def getRandomSwap(G, s, D):
+    student1 = list(range(len(G.nodes)))
+    student2 = list(range(len(G.nodes)))
+    random.shuffle(student1)
+
+    for curStudent in student1:
+        student2.remove(curStudent)
+        random.shuffle(student2)
+        for swapStudent in student2:
+            D[curStudent], D[swapStudent] = D[swapStudent], D[curStudent]
+            if is_valid_solution(D, G, s, len(set(D.values()))):
+                newHappiness = calculate_happiness(D, G)
+                # print(curHappiness, newHappiness)
+                D[curStudent], D[swapStudent] = D[swapStudent], D[curStudent]
+                return curStudent, swapStudent, newHappiness
+            D[curStudent], D[swapStudent] = D[swapStudent], D[curStudent]
+
+    return None
+
+
+def getBetterStudentAssignment(G, s, D, maxRooms, curHappiness):
     students = list(range(len(G.nodes)))
     rooms = list(range(maxRooms))
     random.shuffle(students)
@@ -219,27 +291,46 @@ def getBetterAssignment(G, s, D, maxRooms, curHappiness):
             if is_valid_solution(D, G, s, len(set(D.values()))):
                 newHappiness = calculate_happiness(D, G)
                 if curHappiness < newHappiness:
-                    #print(curHappiness, newHappiness)
+                    # print(curHappiness, newHappiness)
                     D[curStudent] = oldRoom
                     return curStudent, newRoom, newHappiness
 
         D[curStudent] = oldRoom
 
-    if student is None:
-        return None
-    return student, move
+    return None
+
+
+def getBetterSwapAssignment(G, s, D, curHappiness):
+    student1 = list(range(len(G.nodes)))
+    student2 = list(range(len(G.nodes)))
+    random.shuffle(student1)
+
+    for curStudent in student1:
+        student2.remove(curStudent)
+        random.shuffle(student2)
+        for swapStudent in student2:
+            D[curStudent], D[swapStudent] = D[swapStudent], D[curStudent]
+            if is_valid_solution(D, G, s, len(set(D.values()))):
+                newHappiness = calculate_happiness(D, G)
+                if curHappiness < newHappiness:
+                    # print(curHappiness, newHappiness)
+                    D[curStudent], D[swapStudent] = D[swapStudent], D[curStudent]
+                    return curStudent, swapStudent, newHappiness
+            D[curStudent], D[swapStudent] = D[swapStudent], D[curStudent]
+
+    return None
 
 
 if __name__ == "__main__":
-    repeat = 5
+    repeat = 10
     input_dir = "shits_"
-    timeout_fname = "submission5"
+    timeout_fname = "submission7"
     timeout_path = f"{timeout_fname}/"
-    solved_path = "submission5/"
+    solved_path = f"{timeout_fname}/"
     for fname in sorted(os.listdir(input_dir), reverse=True):
         isSolved = os.path.isfile(f"{solved_path}{fname[:-3]}.out")
         isComputed = os.path.isfile(f"{timeout_path}{fname[:-3]}.out")
-        if "large" in fname and not isSolved and not isComputed:
+        if "medium" in fname and not isSolved and not isComputed:
             print("Starting fname: ", fname)
             path = os.path.join(input_dir, fname)
             G, s = read_input_file(path)
