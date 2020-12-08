@@ -89,7 +89,7 @@ if __name__ == "__main__":
             end = time.time()
             print(f"Solution: {D}, {k}")
             if D == None:
-                printf("couldnt find solution")
+                print("couldnt find solution")
                 continue
 
             assert is_valid_solution(D, G, s, k)
